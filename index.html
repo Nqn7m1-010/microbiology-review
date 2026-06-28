@@ -79,9 +79,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
 .quiz-stats{font-size:12px;color:var(--text2);margin:6px 0}
 
 /* Latin */
-.latin-item{padding:8px 12px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px}
-.latin-item .la{color:var(--primary);font-style:italic;font-weight:600}
-.latin-item .badge{font-size:10px;padding:2px 6px;border-radius:4px}
+.latin-item{padding:8px 10px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:flex;align-items:center;font-size:13px;margin-bottom:4px;gap:6px}
+.latin-item .cn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.latin-item .right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.latin-item .la{color:var(--primary);font-style:italic;font-weight:600;font-size:12px}
+.latin-item .badge{font-size:10px;padding:2px 6px;border-radius:4px;flex-shrink:0}
 .latin-item .badge.red{background:#fef2f2;color:#dc2626}
 .latin-item .badge.blue{background:#dbeafe;color:#2563eb}
 
@@ -624,25 +626,104 @@ function showResult() {
 }
 
 // ===== LATIN =====
+
+var latinTestMode = false;
+var latinTestItems = [];
+var latinTestIdx = 0;
+var latinTestCorrect = 0;
+var latinTestTotal = 0;
+
 function renderLatin() {
-  const groups = [...new Set(DATA.latin.map(l=>l.g))];
-  $('latinGroups').innerHTML = '<span class="tag tag-blue" style="cursor:pointer" onclick="filterLatinGroup(this,\'\')">全部</span>' +
-    groups.map(g => `<span class="tag tag-orange" style="cursor:pointer" onclick="filterLatinGroup(this,'${g}')">${g}</span>`).join('');
+  var groups = [...new Set(DATA.latin.map(function(l){return l.g}))];
+  var h = '<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">';
+  h += '<span class="tag tag-blue" style="cursor:pointer" onclick="filterLatinGroup(this,'')">全部</span>';
+  groups.forEach(function(g){h += '<span class="tag tag-orange" style="cursor:pointer" onclick="filterLatinGroup(this,''+g+'')">'+g+'</span>';});
+  h += '<span style="margin-left:auto"><button onclick="toggleLatinTest()" id="latinTestBtn" style="padding:4px 12px;border:1.5px solid var(--primary);border-radius:6px;background:none;color:var(--primary);cursor:pointer;font-size:11px">测试模式</button></span>';
+  h += '</div>';
+  document.getElementById('latinGroups').innerHTML = h;
   renderLatinList(DATA.latin);
 }
+
 function filterLatinGroup(el, g) {
-  renderLatinList(g ? DATA.latin.filter(l=>l.g===g) : DATA.latin);
+  var items = g ? DATA.latin.filter(function(l){return l.g===g}) : DATA.latin;
+  renderLatinList(items);
 }
+
 function renderLatinList(items) {
-  $('latinList').innerHTML = items.map(l => `<div class="latin-item">
-    <span>${l.n}</span>
-    <span><span class="la">${l.l}</span><span class="badge ${l.v}">${l.v==='red'?'掌握':'识别'}</span></span>
-  </div>`).join('');
+  if (latinTestMode) {
+    document.getElementById('latinList').innerHTML = '<div id="latinTestArea"></div>';
+    startLatinTest(items);
+    return;
+  }
+  var h = items.map(function(l){
+    return '<div class="latin-item"><span class="cn">'+l.n+'</span><span class="right"><span class="la">'+l.l+'</span><span class="badge '+l.v+'">'+(l.v==='red'?'掌握':'识别')+'</span></span></div>';
+  }).join('');
+  document.getElementById('latinList').innerHTML = h;
 }
+
 function filterLatin() {
-  const q = $('latinSearch').value.trim().toLowerCase();
-  renderLatinList(q ? DATA.latin.filter(l=>l.n.includes(q)||l.l.toLowerCase().includes(q)) : DATA.latin);
+  var q = document.getElementById('latinSearch').value.trim().toLowerCase();
+  var items = q ? DATA.latin.filter(function(l){return l.n.includes(q)||l.l.toLowerCase().includes(q)}) : DATA.latin;
+  renderLatinList(items);
 }
+
+function toggleLatinTest() {
+  latinTestMode = !latinTestMode;
+  var btn = document.getElementById('latinTestBtn');
+  btn.textContent = latinTestMode ? '退出测试' : '测试模式';
+  btn.style.background = latinTestMode ? 'var(--primary)' : 'none';
+  btn.style.color = latinTestMode ? '#fff' : 'var(--primary)';
+  if (latinTestMode) {
+    latinTestItems = DATA.latin.slice().sort(function(){return Math.random()-0.5});
+    latinTestIdx = 0; latinTestCorrect = 0; latinTestTotal = DATA.latin.length;
+    renderLatinList(DATA.latin);
+  } else {
+    renderLatinList(DATA.latin);
+  }
+}
+
+function startLatinTest(items) {
+  var el = document.getElementById('latinTestArea');
+  if (latinTestIdx >= items.length || latinTestIdx >= latinTestTotal) {
+    var pct = latinTestTotal ? Math.round(latinTestCorrect/latinTestTotal*100) : 0;
+    el.innerHTML = '<div class="card" style="text-align:center;padding:20px">'+
+      '<div style="font-size:32px;margin-bottom:8px">'+(pct>=80?'🎉':(pct>=60?'👍':'💪'))+'</div>'+
+      '<div style="font-size:18px;font-weight:700">'+latinTestCorrect+'/'+latinTestTotal+'</div>'+
+      '<div style="font-size:13px;color:var(--text2);margin:6px 0">正确率 '+pct+'%</div>'+
+      '<button onclick="toggleLatinTest()" style="margin-top:8px;padding:8px 20px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer">完成</button></div>';
+    return;
+  }
+  var q = items[latinTestIdx];
+  var opts = [q.n];
+  var pool = DATA.latin.filter(function(l){return l.n!==q.n});
+  while (opts.length < 4 && pool.length > 0) {
+    var pick = pool[Math.floor(Math.random()*pool.length)];
+    if (opts.indexOf(pick.n) < 0) opts.push(pick.n);
+  }
+  opts.sort(function(){return Math.random()-0.5});
+  var correctIdx = opts.indexOf(q.n);
+  var h = '<div style="font-size:13px;color:var(--text2);margin-bottom:6px">'+(latinTestIdx+1)+'/'+latinTestTotal+' 答对'+latinTestCorrect+'</div>';
+  h += '<div class="card"><div style="text-align:center;margin-bottom:12px">';
+  h += '<div style="font-size:11px;color:var(--text2);margin-bottom:4px">请选择对应的中文名</div>';
+  h += '<div style="font-size:22px;font-weight:700;color:var(--primary);font-style:italic">'+q.l+'</div></div>';
+  for (var i=0;i<opts.length;i++) {
+    h += '<div class="quiz-opt" onclick="checkLatinTest(this,'+i+','+correctIdx+')">'+opts[i]+'</div>';
+  }
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function checkLatinTest(el, selIdx, correctIdx) {
+  var card = el.closest('.card');
+  var opts = card.querySelectorAll('.quiz-opt');
+  for (var i=0;i<opts.length;i++) opts[i].classList.add('disabled');
+  el.classList.add(selIdx===correctIdx?'selected-correct':'selected-wrong');
+  opts[correctIdx].classList.add('show-correct');
+  if (selIdx === correctIdx) latinTestCorrect++;
+  latinTestIdx++;
+  setTimeout(function(){startLatinTest(latinTestItems);}, 800);
+}
+
 
 // ===== NOTES =====
 function renderNotes() {
