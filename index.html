@@ -190,8 +190,14 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
         </select>
         <button onclick="renderQuiz()" style="padding:8px 14px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">刷新</button>
       </div>
-      <div class="quiz-stats" id="quizStats"></div>
-      <div id="quizList"></div>
+      <div id="quizStatus" style="font-size:13px;color:var(--text2);margin-bottom:6px"></div>
+      <div id="quizCard" style="display:none"></div>
+      <div style="display:flex;gap:6px;margin-top:8px" id="quizNav" style="display:none">
+        <button onclick="prevQuestion()" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">上一题</button>
+        <button onclick="nextQuestion()" style="padding:8px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">下一题</button>
+        <button onclick="startQuiz()" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">重新开始</button>
+      </div>
+      <div id="quizResult" style="display:none"></div>
     </div>
 
     <!-- 拉丁名页 -->
@@ -451,42 +457,103 @@ function randomQA() {
 }
 
 // ===== QUIZ =====
-function renderQuiz() {
-  const ch = $('quizChapter').value, ct = parseInt($('quizCount').value);
-  let pool = ch ? DATA.quiz.filter(q=>q.c===ch) : [...DATA.quiz];
-  let selected = [...pool];
-  if(ct>0 && selected.length>ct) selected.sort(()=>Math.random()-0.5).splice(ct);
-  const total = Object.keys(S.qAnswers).length;
-  const correct = Object.keys(S.qAnswers).filter(k=>{const q=DATA.quiz.find(x=>x.q===k);return q&&S.qAnswers[k]===q.a}).length;
-  $('quizStats').innerHTML = `已答 ${total} 题 · 正确 ${correct} 题 · 正确率 ${total?Math.round(correct/total*100):0}%`;
-  $('quizList').innerHTML = selected.map((q,i) => {
-    const ua = S.qAnswers[q.q], ans = ua!==undefined, isC = ua===q.a;
-    const opts = q.o.map((o,j) => {
-      let cls = 'quiz-opt';
-      if(ans) {
-        if(j===q.a) cls+=' show-correct';
-        if(j===ua&&j!==q.a) cls+=' selected-wrong';
-        if(j===ua&&j===q.a) cls+=' selected-correct';
-        cls+=' disabled';
-      }
-      return `<div class="${cls}" ${ans?'':`onclick="checkQuiz(this,'${q.q}',${j},${q.a})"`}>${'ABCD'[j]}. ${o}</div>`;
-    }).join('');
-    return `<div class="card" style="${ans?`border-left:3px solid ${isC?'var(--success)':'var(--danger)'}`:''}">
-      <div class="quiz-chapter">${q.c}</div>
-      <div style="font-weight:600;font-size:14px;margin-bottom:8px">${q.q}</div>
-      ${opts}
-    </div>`;
-  }).join('');
+var quizQuestions = [];
+var quizIndex = 0;
+var quizAnswered = 0;
+var quizCorrect = 0;
+
+function startQuiz() {
+  var ch = document.getElementById('quizChapter').value;
+  var pool = ch ? DATA.quiz.filter(function(q){return q.c===ch}) : DATA.quiz.slice();
+  quizQuestions = pool.slice().sort(function(){return Math.random()-0.5});
+  quizIndex = 0;
+  quizAnswered = 0;
+  quizCorrect = 0;
+  document.getElementById('quizCard').style.display = 'block';
+  document.getElementById('quizNav').style.display = 'flex';
+  document.getElementById('quizResult').style.display = 'none';
+  showQuestion();
 }
-function checkQuiz(el, qText, selIdx, correctIdx) {
-  const card = el.closest('.card');
-  qsa('.quiz-opt', card).forEach(o=>o.classList.add('disabled'));
-  el.classList.add(selIdx===correctIdx?'selected-correct':'selected-wrong');
-  qsa('.quiz-opt', card)[correctIdx].classList.add('show-correct');
-  card.style.borderLeft = `3px solid ${selIdx===correctIdx?'var(--success)':'var(--danger)'}`;
-  S.qAnswers[qText] = selIdx;
+
+function showQuestion() {
+  if (quizIndex >= quizQuestions.length) {
+    showQuizResult();
+    return;
+  }
+  var q = quizQuestions[quizIndex];
+  var ua = S.qAnswers[q.q];
+  var ans = ua !== undefined;
+  
+  var progress = '<div class="quiz-progress-bar"><div class="fill" style="width:' + Math.round(quizIndex/quizQuestions.length*100) + '%"></div></div>';
+  var status = '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2)"><span>' + (quizIndex+1) + '/' + quizQuestions.length + '</span><span>答' + quizAnswered + ' 对' + quizCorrect + '</span></div>';
+  
+  var optsHtml = '';
+  for (var j = 0; j < q.o.length; j++) {
+    var cls = 'quiz-opt';
+    if (ans) {
+      if (j === q.a) cls += ' show-correct';
+      if (j === ua && j !== q.a) cls += ' selected-wrong';
+      if (j === ua && j === q.a) cls += ' selected-correct';
+      cls += ' disabled';
+    }
+    var onclick = ans ? '' : 'onclick="checkQuiz(this,' + j + ',' + q.a + ')"';
+    optsHtml += '<div class="' + cls + '" ' + onclick + '>' + 'ABCD'[j] + '. ' + q.o[j] + '</div>';
+  }
+  
+  var cardHtml = '<div class="card">';
+  cardHtml += '<span class="tag tag-blue">' + q.c + '</span>';
+  cardHtml += '<div style="font-weight:600;font-size:14px;margin:8px 0">' + q.q + '</div>';
+  cardHtml += optsHtml;
+  cardHtml += '</div>';
+  
+  document.getElementById('quizStatus').innerHTML = progress + status;
+  document.getElementById('quizCard').innerHTML = cardHtml;
+}
+
+function checkQuiz(el, selIdx, correctIdx) {
+  var card = el.closest('.card');
+  var opts = card.querySelectorAll('.quiz-opt');
+  for (var i = 0; i < opts.length; i++) opts[i].classList.add('disabled');
+  el.classList.add(selIdx === correctIdx ? 'selected-correct' : 'selected-wrong');
+  opts[correctIdx].classList.add('show-correct');
+  
+  var q = quizQuestions[quizIndex];
+  S.qAnswers[q.q] = selIdx;
   localStorage.setItem('mq', JSON.stringify(S.qAnswers));
-  renderQuiz();
+  
+  quizAnswered++;
+  if (selIdx === correctIdx) quizCorrect++;
+  
+  showQuestion();
+}
+
+function nextQuestion() {
+  if (quizIndex < quizQuestions.length) {
+    quizIndex++;
+    showQuestion();
+  }
+}
+
+function prevQuestion() {
+  if (quizIndex > 0) {
+    quizIndex--;
+    showQuestion();
+  }
+}
+
+function showQuizResult() {
+  var pct = quizQuestions.length ? Math.round(quizCorrect/quizQuestions.length*100) : 0;
+  var grade = pct >= 80 ? '优秀!' : (pct >= 60 ? '不错!' : '继续加油!');
+  document.getElementById('quizCard').style.display = 'none';
+  document.getElementById('quizNav').style.display = 'none';
+  document.getElementById('quizStatus').innerHTML = '';
+  document.getElementById('quizResult').style.display = 'block';
+  document.getElementById('quizResult').innerHTML = '<div class="card" style="text-align:center;padding:30px">' +
+    '<div style="font-size:40px;margin-bottom:10px">' + (pct >= 80 ? '🎉' : (pct >= 60 ? '👍' : '💪')) + '</div>' +
+    '<div style="font-size:20px;font-weight:700">' + quizCorrect + '/' + quizQuestions.length + '</div>' +
+    '<div style="font-size:15px;color:var(--text2);margin:6px 0">正确率 ' + pct + '% ' + grade + '</div>' +
+    '<button onclick="startQuiz()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:14px">再来一轮</button>' +
+    '</div>';
 }
 
 // ===== LATIN =====
