@@ -2,234 +2,182 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微生物学期末复习系统</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>微生物学复习</title>
 <style>
-:root{--primary:#1a3a5c;--primary-light:#2a5a8c;--accent:#e67e22;--bg:#f5f7fa;--card:#fff;--text:#2c3e50;--text-light:#7f8c8d;--border:#e1e8ed;--success:#27ae60;--danger:#e74c3c;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,'Microsoft YaHei','PingFang SC',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh}
-.app{display:flex;flex-direction:column;height:100vh}
-.header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
-.header h1{font-size:18px;font-weight:600;white-space:nowrap}
-.header-right{margin-left:auto;display:flex;gap:4px;align-items:center}
-.header-right button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:13px;transition:background .2s}
-.header-right button:hover{background:rgba(255,255,255,.25)}
-.tabs{display:flex;background:var(--primary);padding:0 8px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{padding:8px 12px;color:rgba(255,255,255,.65);cursor:pointer;white-space:nowrap;font-size:12px;border-bottom:3px solid transparent;transition:all .2s;flex-shrink:0}
-.tab:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.08)}
-.tab.active{color:#fff;border-bottom-color:var(--accent);background:rgba(255,255,255,.1)}
-.main{flex:1;overflow:hidden;display:flex}
-.page{display:none;width:100%;height:100%;overflow-y:auto;padding:12px 16px}
-.page.active{display:block}
+:root{--bg:#f4f6f9;--card:#fff;--text:#1a2332;--text2:#6b7a8f;--border:#e8ecf1;--primary:#2563eb;--primary-light:#dbeafe;--accent:#f59e0b;--success:#10b981;--danger:#ef4444;--shadow:0 1px 3px rgba(0,0,0,.06);--radius:10px}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;height:100vh;overflow:hidden}
+.dark{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--text2:#94a3b8;--border:#334155;--shadow:0 1px 3px rgba(0,0,0,.2);--primary-light:#1e3a5f}
+
+/* App shell */
+.app{display:flex;flex-direction:column;height:100vh;max-width:800px;margin:0 auto}
+.header{display:flex;align-items:center;padding:12px 16px;gap:8px;flex-shrink:0}
+.header h1{font-size:17px;font-weight:700;flex:1}
+.header-btn{width:32px;height:32px;border:none;background:var(--card);border-radius:8px;cursor:pointer;font-size:16px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;color:var(--text)}
+
+/* Nav bar */
+.nav{display:flex;padding:0 12px 8px;gap:4px;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:8px;cursor:pointer;white-space:nowrap;font-size:11px;color:var(--text2);transition:all .15s;min-width:56px;border:none;background:none;flex-shrink:0}
+.nav-item .icon{font-size:18px}
+.nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+.nav-item:hover{background:var(--border)}
+
+/* Pages */
+.main{flex:1;overflow:hidden;position:relative}
+.page{display:none;height:100%;overflow-y:auto;padding:0 16px 16px}
+.page.active{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Cards */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:10px}
-.search-box{display:flex;gap:8px;margin-bottom:12px}
-.search-box input{flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none;transition:border-color .2s}
-.search-box input:focus{border-color:var(--primary-light)}
-.term-card{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;display:flex;align-items:flex-start;gap:8px}
-.term-card:hover{background:#f8f9fa}
-.term-card:last-child{border-bottom:none}
-.term-check{font-size:16px;cursor:pointer;flex-shrink:0;margin-top:2px;width:20px;text-align:center}
-.term-name{font-weight:600;color:var(--primary);font-size:14px;flex:1}
-.term-def{font-size:13px;color:var(--text-light);margin-top:4px;display:none;line-height:1.6;padding-left:28px}
-.term-card.expanded .term-def{display:block}
-.letter-index{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
-.letter-index span{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:var(--border);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
-.letter-index span:hover,.letter-index span.active{background:var(--primary-light);color:#fff}
-.qa-q{font-weight:600;font-size:14px;color:var(--primary);cursor:pointer;padding:8px 0}
-.qa-a{font-size:13px;color:var(--text);line-height:1.7;padding:8px 12px;background:#f8f9fa;border-radius:8px;margin-top:4px;display:none}
+.card-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.card-text{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* Search */
+.search-wrap{position:sticky;top:0;z-index:10;padding:8px 0 10px;background:var(--bg)}
+.search-wrap input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:var(--card);color:var(--text);transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--primary)}
+
+/* Dashboard */
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dash-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;cursor:pointer;transition:transform .1s;text-align:center}
+.dash-card:active{transform:scale(.97)}
+.dash-card .icon{font-size:24px;margin-bottom:4px}
+.dash-card .label{font-size:12px;color:var(--text2)}
+.dash-card .count{font-size:20px;font-weight:700;color:var(--primary)}
+.dash-progress{margin-top:4px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.dash-progress .fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+
+/* Term list */
+.term-item{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.term-item:last-child{border-bottom:none}
+.term-check{width:20px;text-align:center;cursor:pointer;font-size:15px;flex-shrink:0;margin-top:1px}
+.term-name{font-weight:600;font-size:14px}
+.term-def{font-size:13px;color:var(--text2);margin-top:3px;display:none;line-height:1.6;padding-right:4px}
+.term-item.open .term-def{display:block}
+.letter-tabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
+.letter-tabs span{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:var(--card);color:var(--text2);box-shadow:var(--shadow)}
+.letter-tabs span.active{background:var(--primary);color:#fff}
+
+/* Q&A */
+.qa-q{font-weight:600;font-size:14px;cursor:pointer;padding:6px 0}
+.qa-a{font-size:13px;color:var(--text2);padding:8px 12px;background:var(--bg);border-radius:8px;margin-top:4px;display:none;line-height:1.7}
 .qa-item.open .qa-a{display:block}
-.exam-section-title{font-weight:600;color:var(--primary);margin:10px 0 6px;font-size:14px;border-left:3px solid var(--accent);padding-left:8px}
-.exam-question{padding:6px 0;border-bottom:1px solid #f0f0f0}
-.exam-q-text{font-size:13px;margin-bottom:4px}
-.exam-answer{font-size:13px;color:var(--success);display:none;padding:6px 10px;background:#eafaf1;border-radius:6px;margin-top:4px}
-.exam-show-btn{font-size:12px;color:var(--primary-light);cursor:pointer;background:none;border:none}
-.exam-options{display:flex;flex-direction:column;gap:4px;margin:4px 0}
-.exam-opt{padding:6px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s;background:var(--card)}
-.exam-opt:hover{border-color:var(--primary-light)}
-.exam-opt.correct{background:#eafaf1;border-color:var(--success);color:var(--success)}
-.exam-opt.wrong{background:#fde8e8;border-color:var(--danger);color:var(--danger)}
-.exam-opt.disabled{opacity:.6;cursor:default}
-.quiz-header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.quiz-header select{padding:6px 10px;border:2px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:var(--card);color:var(--text)}
-.quiz-header select:focus{border-color:var(--primary-light)}
-.quiz-progress{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
-.quiz-progress-fill{height:100%;background:var(--primary-light);border-radius:3px;transition:width .3s}
-.quiz-stats{display:flex;gap:16px;margin:8px 0;flex-wrap:wrap}
-.quiz-stat{font-size:13px;color:var(--text-light)}
-.quiz-stat b{color:var(--text)}
-.quiz-card{padding:16px;margin-bottom:12px;border-left:4px solid var(--primary-light)}
-.quiz-card.correct{border-left-color:var(--success);background:#f0faf4}
-.quiz-card.wrong{border-left-color:var(--danger);background:#fdf0ef}
-.quiz-q-num{font-size:12px;color:var(--text-light);margin-bottom:4px}
-.quiz-q-chapter{font-size:11px;color:var(--accent);margin-bottom:2px}
-.quiz-q-text{font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.5}
-.quiz-opt{padding:8px 12px;border:2px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:4px;transition:all .15s;background:var(--card)}
-.quiz-opt:hover{border-color:var(--primary-light)}
-.quiz-opt.selected-correct{background:#eafaf1;border-color:var(--success);color:var(--success);font-weight:600}
-.quiz-opt.selected-wrong{background:#fde8e8;border-color:var(--danger);color:var(--danger);font-weight:600}
-.quiz-opt.show-correct{background:#eafaf1;border-color:var(--success)}
-.quiz-opt.disabled{pointer-events:none;opacity:.7}
-.quiz-explain{font-size:13px;color:var(--text-light);margin-top:8px;padding:8px 12px;background:#f8f9fa;border-radius:6px;display:none;line-height:1.5}
-.quiz-explain.show{display:block}
-.quiz-result-bar{display:flex;gap:0;border-radius:8px;overflow:hidden;height:24px;margin:8px 0}
-.quiz-result-bar span{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600}
-.flashcard-container{display:flex;flex-direction:column;align-items:center;padding:16px 0}
-.flashcard{width:100%;max-width:480px;height:200px;perspective:1000px;cursor:pointer;margin-bottom:12px}
-.flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
-.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
-.flashcard-front,.flashcard-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
-.flashcard-front{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff}
-.flashcard-front .fc-label{font-size:13px;opacity:.8;margin-bottom:8px}
-.flashcard-front .fc-main{font-size:24px;font-weight:700}
-.flashcard-back{background:var(--card);transform:rotateY(180deg);border:2px solid var(--border)}
-.flashcard-back .fc-label{font-size:12px;color:var(--text-light);margin-bottom:6px}
-.flashcard-back .fc-main{font-size:18px;color:var(--text);line-height:1.5}
-.flashcard-back .fc-hint{font-size:11px;color:var(--accent);margin-top:6px}
-.fc-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
-.fc-controls button{padding:6px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
-.fc-btn-prev{background:var(--border);color:var(--text)}
-.fc-btn-next{background:var(--primary-light);color:#fff}
-.fc-btn-shuffle{background:var(--accent);color:#fff}
-.fc-btn-auto{background:#8e44ad;color:#fff}
-.fc-btn-auto.active{background:#6c3483;box-shadow:0 0 0 2px rgba(142,68,173,.4)}
-.fc-progress{width:100%;max-width:480px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:8px 0}
-.fc-progress-fill{height:100%;background:var(--primary-light);border-radius:2px;transition:width .3s}
-.fc-counter{font-size:12px;color:var(--text-light)}
+
+/* Quiz */
+.quiz-opt{display:block;width:100%;text-align:left;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px;margin-bottom:5px;transition:all .1s;color:var(--text)}
+.quiz-opt:hover{border-color:var(--primary)}
+.quiz-opt.selected-correct{background:#ecfdf5;border-color:var(--success);color:var(--success)}
+.quiz-opt.selected-wrong{background:#fef2f2;border-color:var(--danger);color:var(--danger)}
+.quiz-opt.show-correct{background:#ecfdf5;border-color:var(--success)}
+.quiz-opt.disabled{pointer-events:none;opacity:.6}
+.quiz-chapter{font-size:11px;color:var(--primary);margin-bottom:2px}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:8px 0}
+.quiz-progress-bar .fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+.quiz-stats{font-size:12px;color:var(--text2);margin:6px 0}
+
+/* Latin */
 .latin-item{padding:8px 12px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px}
-.latin-item .cn{color:var(--text)}
-.latin-item .la{color:var(--primary-light);font-style:italic;font-weight:600}
-.latin-item .level{font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px}
-.latin-item .level.red{background:#fde8e8;color:#c0392b}
-.latin-item .level.blue{background:#e8f0fd;color:#2980b9}
-.notes-content{font-size:14px;line-height:1.8;padding:12px}
-.notes-content h2{color:var(--primary);margin:16px 0 8px;font-size:17px;border-bottom:1px solid var(--border);padding-bottom:4px}
-.notes-content h3{color:var(--primary-light);margin:12px 0 6px;font-size:15px}
-.notes-content h4{color:var(--text);margin:10px 0 4px;font-size:14px;font-weight:600}
-.notes-content p{margin:6px 0;font-size:var(--note-fs,14px)}
-.notes-content table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
-.notes-content td,.notes-content th{border:1px solid var(--border);padding:6px 8px;text-align:left}
+.latin-item .la{color:var(--primary);font-style:italic;font-weight:600}
+.latin-item .badge{font-size:10px;padding:2px 6px;border-radius:4px}
+.latin-item .badge.red{background:#fef2f2;color:#dc2626}
+.latin-item .badge.blue{background:#dbeafe;color:#2563eb}
+
+/* Exam */
+.exam-section{margin:12px 0 8px;font-weight:600;font-size:14px;color:var(--primary)}
+.exam-q{padding:6px 0}
+.exam-answer{display:none;padding:6px 10px;background:#ecfdf5;border-radius:6px;margin-top:4px;font-size:13px;color:var(--success)}
+.exam-show-btn{font-size:12px;color:var(--primary);cursor:pointer;background:none;border:none;padding:2px 0}
+
+/* Notes */
+.notes-content{font-size:14px;line-height:1.8;padding-bottom:20px}
+.notes-content h2{font-size:17px;margin:18px 0 8px;color:var(--text)}
+.notes-content h3{font-size:15px;margin:14px 0 6px;color:var(--primary)}
+.notes-content p{margin:5px 0}
+.notes-content table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.notes-content td,.notes-content th{border:1px solid var(--border);padding:5px 6px}
 .notes-content th{background:var(--primary);color:#fff;font-weight:600}
-.notes-content tr:nth-child(even){background:#f8f9fa}
-.notes-content ul,.notes-content ol{margin:4px 0 4px 20px}
-.notes-content li{margin:2px 0}
-.chapter-nav{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:8px}
-.chapter-nav button{padding:4px 10px;border:1px solid var(--border);border-radius:12px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-light);transition:all .15s}
-.chapter-nav button:hover{border-color:var(--primary-light);color:var(--primary-light)}
-.search-result{padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer}
-.search-result:hover{background:#f8f9fa}
-.search-result .sr-title{font-weight:600;font-size:14px;color:var(--primary)}
-.search-result .sr-source{font-size:10px;color:var(--accent);margin-bottom:2px}
-.search-result .sr-snippet{font-size:12px;color:var(--text-light);line-height:1.4}
-mark{background:#fff3cd;padding:0 2px}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin:6px 0}
-.progress-bar-fill{height:100%;background:var(--success);border-radius:2px;transition:width .3s}
-.toggle-group{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
-.toggle-btn{padding:4px 12px;border:1px solid var(--border);border-radius:16px;font-size:12px;cursor:pointer;background:var(--card);transition:all .15s;color:var(--text-light)}
-.toggle-btn.active{background:var(--primary-light);color:#fff;border-color:var(--primary-light)}
-.dark-mode{--bg:#1a1a2e;--card:#16213e;--text:#e0e0e0;--text-light:#a0a0b0;--border:#2a2a4a;--shadow:0 2px 12px rgba(0,0,0,.3)}
-.dark-mode .notes-content table td{border-color:#2a2a4a}
-.dark-mode .notes-content table tr:nth-child(even){background:#1a1a2e}
-@media(max-width:768px){
-  .header h1{font-size:15px}
-  .tab{padding:6px 10px;font-size:11px}
-  .page{padding:8px 10px}
-  .flashcard{height:170px}
-  .flashcard-front .fc-main{font-size:20px}
-}
-.empty-state{text-align:center;padding:30px 16px;color:var(--text-light)}
-.empty-state .icon{font-size:40px;margin-bottom:12px;opacity:.4}
-.timer{font-size:13px;color:var(--accent);font-weight:600;display:inline-block;padding:4px 12px;background:rgba(230,126,34,.1);border-radius:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.notification{position:fixed;top:16px;right:16px;padding:10px 16px;border-radius:8px;color:#fff;font-size:13px;z-index:9999;animation:slideIn .3s;box-shadow:0 4px 20px rgba(0,0,0,.15)}
-.notification.info{background:var(--primary-light)}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.notes-content tr:nth-child(even){background:var(--bg)}
+.chapter-nav{display:flex;gap:4px;flex-wrap:wrap;padding:6px 0;margin:6px 0}
+.chapter-nav button{padding:3px 10px;border:1px solid var(--border);border-radius:12px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text2)}
+
+/* Responsive */
+@media(min-width:600px){.dashboard{grid-template-columns:1fr 1fr 1fr}}
+
+/* Tags */
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.tag-green{background:#ecfdf5;color:#059669}
+.tag-blue{background:#dbeafe;color:#2563eb}
+.tag-orange{background:#fffbeb;color:#d97706}
+
+/* Empty state */
+.empty{padding:40px 20px;text-align:center;color:var(--text2)}
+.empty .icon{font-size:36px;margin-bottom:8px;opacity:.5}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <h1>🦠 微生物学复习</h1>
-    <div class="header-right">
-      <button onclick="changeFontSize(-1)" title="缩小字体">A-</button>
-      <button onclick="changeFontSize(1)" title="放大字体">A+</button>
-      <button onclick="toggleDark()" title="夜间模式">🌙</button>
-      <span style="font-size:12px;opacity:.8" id="progressSummary"></span>
-    </div>
+    <h1>🦠 微生物学</h1>
+    <button class="header-btn" onclick="toggleDark()" title="夜间模式">🌙</button>
+    <button class="header-btn" onclick="switchPage('search')" title="搜索">🔍</button>
   </div>
-  <div class="tabs" id="tabs">
-    <div class="tab active" data-page="notes" onclick="switchPage('notes')">📖 笔记</div>
-    <div class="tab" data-page="terminology" onclick="switchPage('terminology')">📝 名词</div>
-    <div class="tab" data-page="qa" onclick="switchPage('qa')">❓ 简答</div>
-    <div class="tab" data-page="flashcard" onclick="switchPage('flashcard')">🃏 闪卡</div>
-    <div class="tab" data-page="latin" onclick="switchPage('latin')">🔬 拉丁名</div>
-    <div class="tab" data-page="exam" onclick="switchPage('exam')">📋 试卷</div>
-    <div class="tab" data-page="quiz" onclick="switchPage('quiz')">✏️ 题库</div>
-    <div class="tab" data-page="search" onclick="switchPage('search')">🔍 搜索</div>
+  <div class="nav" id="nav">
+    <button class="nav-item active" data-page="home" onclick="switchPage('home')"><span class="icon">🏠</span>首页</button>
+    <button class="nav-item" data-page="notes" onclick="switchPage('notes')"><span class="icon">📖</span>笔记</button>
+    <button class="nav-item" data-page="terms" onclick="switchPage('terms')"><span class="icon">📝</span>名词</button>
+    <button class="nav-item" data-page="qa" onclick="switchPage('qa')"><span class="icon">❓</span>简答</button>
+    <button class="nav-item" data-page="quiz" onclick="switchPage('quiz')"><span class="icon">✏️</span>刷题</button>
+    <button class="nav-item" data-page="latin" onclick="switchPage('latin')"><span class="icon">🔬</span>拉丁名</button>
   </div>
   <div class="main">
-    <div class="page active" id="page-notes">
+    <!-- 首页 -->
+    <div class="page active" id="page-home">
+      <div class="dashboard" id="dashCards"></div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:8px">🦠</div>
+        <div style="font-weight:600;font-size:15px">微生物学期末复习</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">周德庆《微生物学教程》</div>
+        <div id="dashProgress" style="margin-top:10px;font-size:13px;color:var(--text2)"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 快速导航</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+          <button class="nav-item" onclick="switchPage('notes')" style="width:100%;padding:10px;background:var(--bg);border-radius:8px;border:none;font-size:13px;cursor:pointer">📖 浏览笔记</button>
+          <button class="nav-item" onclick="switchPage('terms')" style="width:100%;padding:10px;background:var(--bg);border-radius:8px;border:none;font-size:13px;cursor:pointer">📝 背名词</button>
+          <button class="nav-item" onclick="randomQA()" style="width:100%;padding:10px;background:var(--bg);border-radius:8px;border:none;font-size:13px;cursor:pointer">🎲 随机问答</button>
+          <button class="nav-item" onclick="switchPage('quiz')" style="width:100%;padding:10px;background:var(--bg);border-radius:8px;border:none;font-size:13px;cursor:pointer">✏️ 刷选择题</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 笔记页 -->
+    <div class="page" id="page-notes">
+      <div class="search-wrap"><input type="text" id="notesSearch" placeholder="搜索笔记..." oninput="filterNotes()"></div>
       <div class="chapter-nav" id="chapterNav"></div>
-      <div class="search-box"><input type="text" id="notesSearch" placeholder="搜索笔记..." oninput="filterNotes()"></div>
       <div class="notes-content" id="notesContent">加载中...</div>
     </div>
-    <div class="page" id="page-terminology">
-      <div class="search-box"><input type="text" id="termSearch" placeholder="搜索名词..." oninput="filterTerms()"></div>
-      <div class="letter-index" id="letterIndex"></div>
+
+    <!-- 名词页 -->
+    <div class="page" id="page-terms">
+      <div class="search-wrap"><input type="text" id="termSearch" placeholder="搜索名词..." oninput="filterTerms()"></div>
+      <div class="letter-tabs" id="letterTabs"></div>
       <div id="termList"></div>
-      <div class="progress-bar"><div class="progress-bar-fill" id="termProgress" style="width:0%"></div></div>
-      <div style="text-align:center;font-size:11px;color:var(--text-light);margin-top:4px">点击名词展开 · 点击⬜标记已掌握 · 已掌握 <span id="termCount">0</span> / <span id="termTotal">0</span></div>
     </div>
+
+    <!-- 简答页 -->
     <div class="page" id="page-qa">
-      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-        <input type="text" id="qaSearch" placeholder="搜索题目..." oninput="filterQA()" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:14px;outline:none">
-        <button onclick="randomQA()" style="padding:8px 16px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px">🎲 随机一题</button>
-      </div>
-      <div id="qaRandom" style="display:none;margin-bottom:10px"></div>
-      <div class="toggle-group" id="qaTopics"></div>
+      <div class="search-wrap"><input type="text" id="qaSearch" placeholder="搜索题目..." oninput="filterQA()"></div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px" id="qaTopics"></div>
       <div id="qaList"></div>
     </div>
-    <div class="page" id="page-flashcard">
-      <div class="toggle-group" id="fcMode">
-        <button class="toggle-btn active" data-mode="term" onclick="setFCMode('term')">📝 名词</button>
-        <button class="toggle-btn" data-mode="latin" onclick="setFCMode('latin')">🔬 拉丁名</button>
-      </div>
-      <div class="flashcard-container">
-        <div class="flashcard" id="flashcard" onclick="this.classList.toggle('flipped')">
-          <div class="flashcard-inner">
-            <div class="flashcard-front"><div class="fc-label" id="fcFrontLabel">名词</div><div class="fc-main" id="fcFront"></div></div>
-            <div class="flashcard-back"><div class="fc-label" id="fcBackLabel">释义</div><div class="fc-main" id="fcBack"></div><div class="fc-hint" id="fcHint">点击翻转</div></div>
-          </div>
-        </div>
-        <div class="fc-progress"><div class="fc-progress-fill" id="fcProgressFill"></div></div>
-        <div class="fc-controls">
-          <button class="fc-btn-prev" onclick="prevCard()">◀</button>
-          <button class="fc-btn-shuffle" onclick="shuffleCards()">🔀</button>
-          <button class="fc-btn-auto" id="fcAutoBtn" onclick="toggleAutoPlay()">▶ 自动</button>
-          <button class="fc-btn-next" onclick="nextCard()">▶</button>
-        </div>
-        <div class="fc-counter" id="fcCounter">1 / 1</div>
-      </div>
-    </div>
-    <div class="page" id="page-latin">
-      <div class="search-box"><input type="text" id="latinSearch" placeholder="搜索..." oninput="filterLatin()"></div>
-      <div class="toggle-group" id="latinGroups"></div>
-      <div id="latinList"></div>
-    </div>
-    <div class="page" id="page-exam">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-        <div class="toggle-group" id="examToggle" style="margin-bottom:0">
-          <button class="toggle-btn active" onclick="showExam('A')">试卷 A</button>
-          <button class="toggle-btn" onclick="showExam('B')">试卷 B</button>
-          <button class="toggle-btn" onclick="showExam('C')">试卷 C</button>
-        </div>
-        <span class="timer" id="examTimer">⏱ 00:00</span>
-      </div>
-      <div id="examContent"></div>
-    </div>
+
+    <!-- 刷题页 -->
     <div class="page" id="page-quiz">
-      <div class="quiz-header">
-        <select id="quizChapter" onchange="renderQuiz()">
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <select id="quizChapter" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);outline:none;flex:1">
           <option value="">全部章节</option>
           <option value="绪论">绪论</option>
           <option value="原核微生物">原核微生物</option>
@@ -241,890 +189,379 @@ mark{background:#fff3cd;padding:0 2px}
           <option value="遗传">遗传</option>
           <option value="生态">生态</option>
         </select>
-        <select id="quizCount" onchange="renderQuiz()">
+        <select id="quizCount" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);outline:none">
           <option value="10">10题</option>
           <option value="20">20题</option>
           <option value="30" selected>30题</option>
-          <option value="50">50题</option>
           <option value="0">全部</option>
         </select>
-        <button onclick="renderQuiz()" style="padding:6px 14px;border:none;border-radius:8px;background:var(--primary-light);color:#fff;cursor:pointer;font-size:13px">🔄 刷新</button>
-        <button id="quizModeBtn" onclick="toggleQuizMode()" style="padding:6px 14px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px">🎯 答题模式</button>
-        <span style="font-size:12px;color:var(--text-light);margin-left:auto" id="quizPoolInfo"></span>
+        <button onclick="renderQuiz()" style="padding:8px 14px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">刷新</button>
       </div>
-      <div class="quiz-progress" id="quizProgressWrap" style="display:none"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
       <div class="quiz-stats" id="quizStats"></div>
       <div id="quizList"></div>
     </div>
+
+    <!-- 拉丁名页 -->
+    <div class="page" id="page-latin">
+      <div class="search-wrap"><input type="text" id="latinSearch" placeholder="搜索拉丁名或中文名..." oninput="filterLatin()"></div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px" id="latinGroups"></div>
+      <div id="latinList"></div>
+    </div>
+
+    <!-- 搜索页 -->
     <div class="page" id="page-search">
-      <div class="search-box"><input type="text" id="globalSearch" placeholder="搜索所有资料..." oninput="globalSearch()"></div>
+      <div class="search-wrap"><input type="text" id="globalSearch" placeholder="搜索所有内容..." oninput="globalSearch()" autofocus></div>
       <div id="searchResults"></div>
     </div>
   </div>
 </div>
+
 <script>
 // ===== DATA =====
-const TERMINOLOGY = [
-  {name:"氨基酸异养型微生物",def:"能利用非氨基酸类简单氮源自行合成自身所需的一切氨基酸的微生物",letter:"A"},
-  {name:"艾姆氏试验",def:"利用细菌营养缺陷型的回复突变来检测环境或食品中是否存在化学致癌物的方法",letter:"A"},
-  {name:"ADCC",def:"抗体依赖的细胞介导的细胞毒作用，指表达IgGFc受体的NK细胞等通过与已结合靶细胞表面的IgG抗体的Fc段结合而杀伤靶细胞",letter:"A"},
-  {name:"氨化作用",def:"含氮有机物经微生物的分解而产生氨的作用",letter:"A"},
-  {name:"伴胞晶体",def:"少数芽孢杆菌在其形成芽孢的同时，在细胞内形成的一种菱形或双椎形碱溶性蛋白晶体，对昆虫尤其鳞翅目幼虫有毒杀作用",letter:"B"},
-  {name:"鞭毛",def:"生长在某些细菌表面的长丝状、波曲的蛋白质",letter:"B"},
-  {name:"病毒",def:"一类只含一种类型核酸、专性活细胞内寄生、在离体条件下能以无生命的化学大分子状态长期存在并保持其活性的超显微非细胞结构的分子生物",letter:"B"},
-  {name:"巴斯德效应",def:"酵母菌酒精发酵时通入氧气，发酵减慢，停止产生乙醇，葡萄糖消耗速率下降。氧对发酵的这种抑制现象",letter:"B"},
-  {name:"半合成培养基",def:"主要以化学试剂配制，同时还加有某种或某些天然成分的培养基",letter:"B"},
-  {name:"表型",def:"某一生物体所具有的一切外表特征及内在特性的总和，是遗传型在合适环境下的具体体现",letter:"B"},
-  {name:"变异",def:"生物体在某种内因和外因的作用下所起的遗传物质结构和数量的改变",letter:"B"},
-  {name:"巴斯德消毒",def:"用于牛奶、啤酒等不能进行高温灭菌食品的一种低温消毒方法",letter:"B"},
-  {name:"BOD5",def:"五日生化需氧量，在20℃下1L污水中所含有机物进行微生物氧化时5日内所消耗分子氧的毫克数",letter:"B"},
-  {name:"补体",def:"存在于正常人或动物体血清中的、在抗原抗体反应中有补充抗体作用的一组非特异性血清蛋白",letter:"B"},
-  {name:"出发菌株",def:"用于诱变育种的原始菌株",letter:"C"},
-  {name:"COD",def:"化学需氧量，使用强氧化剂使1L污水中的有机物质迅速进行化学氧化时所消耗的毫克数",letter:"C"},
-  {name:"氮源",def:"凡是能构成微生物细胞或代谢产物中氮素来源的营养物质",letter:"D"},
-  {name:"大肠菌群",def:"一群能发酵乳糖产酸产气、兼性厌氧、G-的无芽孢杆菌，常作为水和食品的卫生细菌学指标",letter:"D"},
-  {name:"发酵",def:"底物脱氢后不经呼吸链传递，最终被作为末端氢受体的外源性无机氧化物（少数为外源性有机物）接受并释放能量的生物氧化过程",letter:"F"},
-  {name:"防腐",def:"利用某些理化因素抑制霉腐微生物的生长繁殖，以防止食品等发生腐败变质的措施",letter:"F"},
-  {name:"反馈抑制",def:"一种负反馈机制，在某一代谢途径中酶促反应的末端产物可抑制在此产物合成中起作用的酶的活性",letter:"F"},
-  {name:"富集培养",def:"利用选择性培养基原理，在含菌样品中加入特殊营养物并创造有利于分离对象生长的条件，使目标微生物大量繁殖",letter:"F"},
-  {name:"反硝化作用",def:"反硝化细菌在缺氧条件下通过硝酸盐呼吸将硝酸盐还原成氮气的过程",letter:"F"},
-  {name:"共生关系",def:"两种生物紧密地共居在一起，彼此依赖，互相协作，互为对方创造有利条件，甚至达到彼此不能分离的程度",letter:"G"},
-  {name:"干扰素",def:"由病毒等干扰素诱生剂刺激机体某些细胞产生的一类具有抗病毒和抗肿瘤作用的特殊糖蛋白",letter:"G"},
-  {name:"感受态",def:"受体细胞能接受转化的生理状态",letter:"G"},
-  {name:"基因突变",def:"细胞内遗传物质的分子结构或数量突然发生的可遗传的变化，可自发或诱导产生",letter:"J"},
-  {name:"核衣壳",def:"核心与衣壳合称核衣壳，衣壳是包围于核酸外面的蛋白质外壳，核心是位于内部的核酸",letter:"H"},
-  {name:"合成培养基",def:"又称组合培养基，按微生物的营养要求精确设计后用多种高纯化学试剂配制成的培养基",letter:"H"},
-  {name:"活性污泥",def:"由细菌、原生动物和其他微生物群体与污水中的有机悬浮物等构成的、在污水处理中具有很强吸附分解能力的凝絮团",letter:"H"},
-  {name:"间体",def:"细胞膜内褶形成的一种管状、层状或囊状结构",letter:"J"},
-  {name:"荚膜",def:"覆盖在某些细菌细胞壁外有明显界限的一层胶状物质，主要成分为水以及多糖或多肽",letter:"J"},
-  {name:"菌落",def:"将单个微生物细胞或一小堆同种细胞接种在固体培养基上，在适宜条件下迅速生长繁殖，形成以母细胞为中心的一堆肉眼可见的子细胞集团",letter:"J"},
-  {name:"菌毛",def:"长在细菌体表的纤细、中空、短直且数量较多的蛋白质类附属物，具有使菌体附着于物体表面上的功能",letter:"J"},
-  {name:"接合",def:"供菌体（雄性）通过性菌毛与受菌体（雌性）直接接触，把F质粒或其携带的核基因组片段传递给后代的遗传重组方式",letter:"J"},
-  {name:"拮抗关系",def:"一种微生物通过产生某种代谢产物或改变环境条件能够抑制、毒害它种微生物生长繁殖甚至使其致死的现象",letter:"J"},
-  {name:"基因重组",def:"两个独立基因组内的遗传基因通过一定途径转移到一起，形成新的稳定基因组的过程",letter:"J"},
-  {name:"抗性突变型",def:"对药物、噬菌体、紫外线等因素具有抗性的突变菌株",letter:"K"},
-  {name:"抗生素",def:"一类低浓度下就能抑制或干扰其他微生物生长并可作为化学治疗剂的微生物次生代谢产物及其人工合成衍生物",letter:"K"},
-  {name:"抗原(Ag)",def:"能与机体中相应克隆的淋巴细胞上的独特抗原受体发生特异性结合从而诱导免疫应答并能与相应抗体发生特异性结合的物质",letter:"K"},
-  {name:"抗体(Ab)",def:"高等动物体在抗原物质的刺激下由浆细胞所产生的一类能与相应抗原发生特异性结合的免疫球蛋白",letter:"K"},
-  {name:"L型细菌",def:"一种自发突变形成的细胞壁缺损细菌，细胞膨大，对渗透压敏感，在固体表面形成油煎蛋样小菌落",letter:"L"},
-  {name:"立克次氏体",def:"一类专性寄生于真核细胞内的G-原核生物",letter:"L"},
-  {name:"烈性噬菌体",def:"侵入敏感细菌后能迅速增殖并引起宿主细胞裂解的噬菌体",letter:"L"},
-  {name:"类病毒",def:"迄今所知最小的、具有感染性的、只含有RNA一种成分、专性寄生在活细胞内的分子病原体",letter:"L"},
-  {name:"连续培养",def:"以一定速度连续流进新鲜培养基同时以同样速度流出培养物，使微生物可长期保持在指数期的培养方法",letter:"L"},
-  {name:"灭菌",def:"采用强烈的物理化学因素使任何物体内外部的一切微生物永远丧失其生长繁殖能力的措施",letter:"M"},
-  {name:"免疫",def:"机体识别和排除抗原性异物的一种保护性功能，包括免疫防御、免疫稳定和免疫监视三个方面",letter:"M"},
-  {name:"内毒素",def:"存在于G-细菌外壁层内的只有细菌溶解时才释放出来的毒素，主要成分是脂多糖(LPS)",letter:"N"},
-  {name:"培养基",def:"由人工配制的供微生物生长繁殖或积累代谢产物用的营养基质",letter:"P"},
-  {name:"普遍转导",def:"完全缺陷噬菌体把误包的供体菌任一DNA片段转移到受体菌中，使受体菌获得供体菌部分遗传性状的现象",letter:"P"},
-  {name:"前噬菌体",def:"整合在溶源细胞染色体上的噬菌体核酸",letter:"Q"},
-  {name:"溶源性",def:"温和噬菌体侵入相应宿主细胞后基因组整合到后者基因组上并随其复制而同步复制，不引起宿主细胞裂解",letter:"R"},
-  {name:"朊病毒",def:"一类能侵染动物细胞并引起宿主体内同类蛋白质发生构象变化而使宿主致病的、不含核酸的蛋白质分子寄生物",letter:"R"},
-  {name:"噬菌斑",def:"将少量噬菌体与大量敏感菌在琼脂培养基上混合培养后在布满菌苔的平板上出现的不长菌的透明圆斑",letter:"S"},
-  {name:"噬菌体",def:"即原核生物的病毒，包括噬细菌体、噬放线菌体和噬蓝细菌体等",letter:"S"},
-  {name:"生物固氮",def:"分子氮通过固氮微生物固氮酶系的催化而形成氨的过程",letter:"S"},
-  {name:"生长因子",def:"一类调节微生物正常代谢所必需的但不能用简单碳、氮源自行合成的微量有机物",letter:"S"},
-  {name:"Stickland反应",def:"少数厌氧梭菌通过部分氨基酸的氧化脱氨与另一些氨基酸的还原脱氨相偶联的一种产能代谢机制",letter:"S"},
-  {name:"生长曲线",def:"以菌数的对数为纵坐标以培养时间为横坐标画出的有规律曲线",letter:"S"},
-  {name:"碳源",def:"凡能构成微生物细胞或代谢产物中碳架来源的营养物质",letter:"T"},
-  {name:"突变率",def:"每一细胞在每一世代中发生某一性状突变的几率",letter:"T"},
-  {name:"同步生长",def:"通过同步培养技术使细胞群体处于同一生长阶段、分裂步调一致的生长状态",letter:"T"},
-  {name:"条件致病菌",def:"宿主的防御功能减弱、正常菌群生长部位改变或长期服用抗生素等后原先某些不致病的正常菌群成员成为致病菌",letter:"T"},
-  {name:"体液免疫",def:"抗体介导的免疫，机体受抗原刺激后B细胞增殖分化为浆细胞由浆细胞合成抗体并释放到体液中发挥免疫作用的特异性免疫",letter:"T"},
-  {name:"微生物",def:"所有个体微小、结构简单的低等生物的总称",letter:"W"},
-  {name:"微生物学",def:"在细胞、分子或群体水平上研究微生物的形态构造、生理代谢、遗传变异、生态分布和分类进化等生命活动基本规律并将其应用于实践领域的科学",letter:"W"},
-  {name:"温和噬菌体",def:"侵入细菌宿主细胞后不导致细胞很快裂解而是将DNA附着或整合在宿主细胞的核酸分子中并随宿主细胞分裂而传递的噬菌体",letter:"W"},
-  {name:"无氧呼吸",def:"以无机氧化物代替分子氧作为呼吸链最终氢受体的一类产能效率不高的生物氧化",letter:"W"},
-  {name:"外毒素",def:"在病原细菌生长过程中不断向外界环境分泌的一类毒性蛋白质",letter:"W"},
-  {name:"细菌质粒",def:"存在于细菌细胞质中的一类能自我复制的小型双链闭合环状DNA分子",letter:"X"},
-  {name:"性菌毛",def:"长在某些G-细菌雄性菌株表面的作为细菌接合时传递遗传物质通道的蛋白质附着物",letter:"X"},
-  {name:"选择性培养基",def:"根据某些微生物的特殊营养要求或对某些化学、物理因素的抗性而设计的培养基",letter:"X"},
-  {name:"消毒",def:"利用较温和的物理化学因素仅杀灭物体表面或内部一部分对人类有害的微生物",letter:"X"},
-  {name:"硝化作用",def:"氨态氮经硝化细菌的氧化转变为硝酸态氮的过程",letter:"X"},
-  {name:"芽孢",def:"某些细菌在其生长发育后期在细胞内所形成的一个圆形或椭圆形的抗逆性休眠体",letter:"Y"},
-  {name:"原生质体",def:"用人工方法除去细菌细胞壁后剩下的完全缺壁的细胞，一般由G+细菌形成",letter:"Y"},
-  {name:"衣原体",def:"一类在真核细胞内营专能量寄生的小型G-原核生物",letter:"Y"},
-  {name:"一步生长曲线",def:"定量描述烈性噬菌体增殖规律的实验曲线",letter:"Y"},
-  {name:"异养微生物",def:"不能以无机碳源为主要或唯一碳源必须利用有机碳源才能生长的微生物",letter:"Y"},
-  {name:"有氧呼吸",def:"底物脱氢后经完整呼吸链传递最终被外源性分子氧接受产生水并释放能量的生物氧化过程",letter:"Y"},
-  {name:"诱变剂",def:"凡能提高突变率的任何理化因子",letter:"Y"},
-  {name:"原生质体融合",def:"通过人为方法使遗传性状不同的两细胞的原生质体发生融合并进而发生遗传重组以产生融合子的过程",letter:"Y"},
-  {name:"营养缺陷型",def:"野生型菌株经诱变处理后由于发生丧失某酶合成能力的突变因而只能在该酶合成产物的培养基中才能生长的突变菌株",letter:"Y"},
-  {name:"诱变育种",def:"利用物理或化学诱变剂处理微生物群体促进其发生突变从中挑选少数符合要求的突变株的育种方法",letter:"Y"},
-  {name:"支原体",def:"在长期进化过程中形成的适应自然生活条件的无细胞壁的原核生物",letter:"Z"},
-  {name:"真菌",def:"一类有细胞壁、无叶绿体、营异养生活、以产孢子繁殖为主的真核微生物",letter:"Z"},
-  {name:"转化",def:"受体细胞直接吸收来自供体细胞的DNA片段并整合到基因组中使受体细胞获得供体细胞部分遗传性状的现象",letter:"Z"},
-  {name:"转导",def:"通过缺陷噬菌体作为媒介把供体细胞的DNA片段转移并整合到受体细胞基因中使受体细胞获得供体细胞部分遗传性状的现象",letter:"Z"},
-  {name:"准性杂交",def:"类似于有性杂交但更原始，可使同种生物两个不同菌株的体细胞发生融合且不以减数分裂方式而导致低频率基因重组并产生重组子",letter:"Z"},
-  {name:"正常菌群",def:"生活在健康动物皮肤、粘膜以及一切与外界环境相通的腔道内的数量大、种类较稳定且一般是无害的微生物",letter:"Z"}
-];
-
-const SHORT_QUESTIONS = [
-  {topic:"细胞结构",q:"G+菌和G-菌细胞壁结构和组成上有何差别？与革兰氏染色反应的关系？",
-   a:"结构：G+菌细胞壁厚（30-40nm），仅1层；G-菌细胞壁薄（8-10nm），有多层。组成：G+菌含肽聚糖且含量高（40-90%）、含磷壁酸；G-菌含肽聚糖但含量低（5-10%），不含磷壁酸，含脂多糖、膜蛋白等。染色关系：G+菌肽聚糖含量高，酒精脱色时失水网孔变小，阻止结晶紫-碘复合物洗脱；G-菌外膜易被酒精洗脱，肽聚糖层薄，不能阻止结晶紫-碘复合物被洗脱。"},
-  {topic:"细胞结构",q:"革兰氏染色的方法步骤及原理？",
-   a:"步骤：涂片→干燥→固定→结晶紫初染→碘液媒染→酒精脱色→番红复染→干燥→镜检。原理：G-菌细胞壁类脂质多，肽聚糖少，酒精脱色时类脂质被溶解增加通透性，结晶紫-碘复合物渗出，细胞脱色后呈复染剂颜色。G+菌肽聚糖含量多且交联度大，类脂质少，酒精脱色后肽聚糖层孔径变小，通透性降低，保留初染颜色。"},
-  {topic:"细胞结构",q:"叙述细菌细胞的各部分构造与功能。",
-   a:"基本结构：细胞壁（维持外形、保护、鞭毛运动支点）、细胞膜（物质交换、维持渗透压、产能基地）、细胞质（营养合成转化代谢场所）、核区（记录传递遗传信息）。特殊结构：鞭毛（运动）、芽孢（抗逆性休眠体）、荚膜（保护、贮存物）。"},
-  {topic:"细胞结构",q:"简述原核微生物和真核微生物的主要区别？",
-   a:"原核微生物：细胞核无核膜包裹，只有核区的裸露DNA，单细胞生物，包括古细菌和真细菌。真核微生物：细胞核有核膜，能进行有丝分裂，细胞质中有线粒体等细胞器的微生物，包括真菌、微藻类、原生动物等。主要区别：核膜有无、细胞器有无、核糖体大小(70S vs 80S)、DNA含量、组蛋白、鞭毛结构(简单vs9+2型)、遗传重组方式等。"},
-  {topic:"细胞结构",q:"肽聚糖有哪几种化学成分？图示其结构。",
-   a:"肽聚糖由氨基酸和氨基糖组成。氨基酸包含四肽（L-Ala-D-Glu-L-Lys/L-DAP-D-Ala）和五肽（五个甘氨酸形成的肽桥）；氨基糖由N-乙酰葡萄糖胺（NAG）和N-乙酰胞壁酸（NAM）组成。双糖单位通过β-1,4糖苷键连接。"},
-  {topic:"微生物学史",q:"试述几位著名微生物学家的主要贡献？",
-   a:"巴斯德：证实发酵实质；否定自然发生说（鹅颈瓶实验）；发明巴斯德消毒法；疫苗生产法。科赫：建立微生物分离纯化、固体培养基、染色技术；提出柯赫准则。列文虎克：首次观察到微生物。贝耶林克：发现非共生固氮菌。维诺格拉德斯基：发现微生物自养生活。"},
-  {topic:"真菌",q:"真菌的无性孢子和有性孢子分别有哪些类型？",
-   a:"无性孢子：节孢子、厚垣孢子、分生孢子、孢囊孢子、游动孢子、芽孢子。有性孢子：卵孢子（壶菌门）、接合孢子（接合菌门）、子囊孢子（子囊菌门）、担孢子（担子菌门）。"},
-  {topic:"真菌",q:"比较根霉与毛霉的异同。",
-   a:"同属于毛霉目，菌丝无隔膜，多核。无性繁殖产生不能游动的孢囊孢子，有性繁殖产生双倍体的接合孢子。主要区别：根霉有假根和匍匐菌丝，毛霉无假根。"},
-  {topic:"微生物分类",q:"细菌、放线菌、酵母菌和霉菌菌落特征的比较。",
-   a:"细菌：湿润、透明或稍透明、小而突起、不结合、颜色多样。放线菌：干燥、不透明、大而疏松或紧密、牢固结合、常带土腥味。酵母菌：较湿润、稍透明、大而突起、不结合、多带酒香味。霉菌：干燥、不透明、疏松或致密、较牢固结合、有霉味。"},
-  {topic:"病毒",q:"什么是朊病毒？与真病毒的主要区别是什么？",
-   a:"朊病毒是一类不含核酸的传染性蛋白质分子，可引起同类蛋白质分子发生构象变化，使宿主致病。与真病毒区别：无免疫原性，无核酸成分，由宿主细胞内基因编码，抗逆境性强，不被蛋白酶水解。"},
-  {topic:"病毒",q:"试述T4噬菌体的结构和繁殖过程。",
-   a:"结构：头部（二十面体对称，内含DNA）、颈部、尾部（尾鞘、尾髓、尾丝、基板）。繁殖过程：吸附→侵入（DNA注入，外壳留外）→增殖（DNA复制+蛋白质合成）→装配（头部+尾部自组装结合）→释放（裂解细胞）。"},
-  {topic:"病毒",q:"温和噬菌体与烈性噬菌体的区别？什么是溶源性？",
-   a:"烈性噬菌体：侵入敏感细菌后迅速增殖并裂解细胞。温和噬菌体：侵入宿主后不裂解细胞，其DNA整合到宿主染色体上同步复制，称为溶源性。含有温和噬菌体的细菌称溶源性细菌，整合的噬菌体DNA称前噬菌体。溶源性细菌特点：遗传性、自发裂解、诱发裂解、免疫性、复愈、溶源转变。"},
-  {topic:"微生物营养",q:"微生物的营养类型有哪四种？各举一例。",
-   a:"1）光能无机自养型（光能自养型）：如蓝细菌、藻类，以CO₂为碳源，光为能源。2）光能有机异养型（光能异养型）：如红螺菌，以简单有机物为供氢体。3）化能无机自养型（化能自养型）：如硝化细菌、硫化细菌，无机物氧化获能，CO₂为碳源。4）化能有机异养型（化能异养型）：如黑曲霉、大肠杆菌，有机物为碳源和能源。"},
-  {topic:"微生物营养",q:"什么是生长因子？包括哪几类化合物？",
-   a:"生长因子是一类对微生物正常代谢必不可少且不能用简单碳源或氮源自行合成的微量有机物。广义的包括维生素、碱基（嘌呤及其衍生物）、胺类以及需要量较大的氨基酸；狭义的是指维生素。"},
-  {topic:"微生物营养",q:"营养物质进入细胞的方式有哪几种？",
-   a:"1）单纯扩散：顺浓度梯度，无载体，不耗能。2）促进扩散：顺浓度梯度，有载体，不耗能。3）主动运输：逆浓度梯度，有载体，耗能，不改变结构。4）基团转位：逆浓度梯度，耗能，改变被运输物结构（如磷酸化）。"},
-  {topic:"微生物营养",q:"配制培养基应遵循哪些原则？",
-   a:"1）目的明确；2）营养协调（尤其C/N比100/0.5-2）；3）物理化学条件适宜（pH、渗透压、水活度、氧化还原电位）；4）经济节约（以粗代精、以废代好）。"},
-  {topic:"微生物代谢",q:"试述固氮微生物的种类及其固氮的生化机制。",
-   a:"种类：自生固氮菌、共生固氮菌（根瘤菌）、联合固氮菌。必要条件：固氮酶（钼铁蛋白+铁蛋白）、能量(ATP)、还原力、严格厌氧微环境。生化途径：N₂+8[H]+18~24ATP→2NH₃+H₂+18~24ADP+18~24Pi"},
-  {topic:"微生物代谢",q:"比较有氧呼吸、无氧呼吸、发酵的异同。",
-   a:"发酵：无氧、不经电子传递链、电子交给中间代谢产物、产能效率低（2ATP）。有氧呼吸：有氧、经完整呼吸链、氧为最终电子受体、产能效率高（38ATP）。无氧呼吸：无氧、经部分呼吸链、无机物（NO₃⁻、SO₄²⁻、CO₂等）为最终电子受体、产能效率居中。"},
-  {topic:"微生物代谢",q:"微生物产能代谢主要有哪几条途径？",
-   a:"四条主要途径：EMP途径（糖酵解，绝大多数生物共有）、HMP途径（己糖磷酸途径，产生NADPH₂和多种碳架）、ED途径（2-酮-3-脱氧-6-磷酸葡萄糖酸途径，微生物特有，用于细菌酒精发酵）、TCA循环（三羧酸循环，代谢枢纽）。"},
-  {topic:"微生物代谢",q:"微生物进行合成代谢的三要素是什么？如何产生？",
-   a:"三要素：能量（ATP）、小分子前体物质、还原力（NADH₂/NADPH₂）。ATP来源：底物水平磷酸化、氧化磷酸化、光合磷酸化。还原力来源：EMP和TCA产生NADH₂，HMP产生NADPH₂。小分子前体来自糖代谢中间产物（共12种）。"},
-  {topic:"微生物代谢",q:"细菌肽聚糖合成的三个阶段？",
-   a:"1）细胞质阶段：生成Park核苷酸（UDP-N-乙酰胞壁酸五肽）；2）细胞膜阶段：与脂质载体（细菌萜醇）结合，生成肽聚糖单体（双糖肽亚单位）；3）细胞膜外阶段：转糖基作用连接成链，转肽酶交联形成网状结构（青霉素抑制此步）。"},
-  {topic:"微生物生长",q:"细菌生长曲线分哪几个时期？各时期特征及应用？",
-   a:"延滞期：菌数不增加，细胞合成物质准备分裂，代谢活跃。应用上尽量缩短（对数期接种、增大接种量）。对数期：菌数以指数增加，代时稳定，代谢最强。是研究微生物生理/遗传的好材料。稳定期：菌体生长和死亡速度相等，菌量最大，积累次级代谢产物。衰亡期：菌数指数下降，细胞自溶。应及时放罐。"},
-  {topic:"微生物生长",q:"影响微生物生长的理化因素有哪些？",
-   a:"温度（嗜冷<20℃/嗜温20-45℃/嗜热>45℃）、pH（细菌6.5-7.5/放线菌7.5-8/霉菌5-6）、氧气（好氧/厌氧/兼性/微好氧）、辐射（紫外线消毒）、渗透压（高渗防腐）、干燥、水活度、表面张力等。"},
-  {topic:"微生物生长",q:"微生物与氧的关系可分为哪几类？举例。",
-   a:"1）专性好氧菌：必须有氧，如固氮菌属。2）兼性厌氧菌：有氧无氧均可，如酿酒酵母。3）微好氧菌：低氧浓度下生长，如霍乱弧菌。4）耐氧菌：有氧无氧都进行发酵，如乳酸乳杆菌。5）专性厌氧菌：严格无氧，如梭菌属。"},
-  {topic:"微生物遗传",q:"什么是质粒？质粒有什么特性？",
-   a:"游离于原核生物核基因组以外，具有独立复制能力的小型共价闭合环状dsDNA分子。特性：非必要的遗传物质；能自我复制稳定遗传；具不相容性和相容性；可转移性；可消除性；可整合性；耐碱性。种类：F因子、R因子、Col因子、Ti质粒、降解质粒等。"},
-  {topic:"微生物遗传",q:"简述原核微生物基因重组的四种方式。",
-   a:"1）转化：受体菌直接吸收供体菌游离DNA片段，不需细胞接触。2）转导：以缺陷噬菌体为媒介转移DNA，不需细胞接触。3）接合：通过性菌毛直接接触传递大段DNA，需F因子。4）原生质体融合：通过化学或电场诱导使去壁原生质体融合并产生重组子。"},
-  {topic:"微生物遗传",q:"简述DNA损伤修复系统。",
-   a:"1）光复活：可见光激活光复活酶，使嘧啶二聚体恢复为单体。2）切除修复（暗修复）：切-补-切-封，不产生突变。3）重组修复：复制后母链与子链重组填补缺口，不产生突变。4）SOS修复：易误修复，产生突变。前三种属无错误修复，SOS属易误修复。"},
-  {topic:"微生物遗传",q:"证明突变自发性的三个经典实验？",
-   a:"1）变量试验（Luria-Delbrück, 1943）：抗性菌落数在各培养皿中差异大，说明突变发生在接触噬菌体之前。2）涂布试验（Newcombe, 1949）：抗性突变发生在未接触噬菌体之前。3）影印培养试验（Lederberg, 1952）：从非选择性平板上检出抗性菌落，证明突变是自发的。"},
-  {topic:"微生物遗传",q:"叙述诱变育种的操作步骤。",
-   a:"1）选择合适出发菌株；2）制备单细胞/单孢子悬液；3）诱变处理（物理：UV、X射线；化学：DES、EMS、NTG）；4）中间培养（表型延迟）；5）筛选（初筛以量为主+复筛以质为主）；6）保藏和扩大试验。"},
-  {topic:"微生物生态",q:"微生物与生物环境之间有哪几种关系？",
-   a:"1）互生：较松散联合，双方有利（如根际微生物与植物）。2）共生：紧密结合形成特殊结构（如地衣=藻类+真菌）。3）寄生：一种生物从另一种获取营养（如病原微生物）。4）拮抗：一种生物产生不利于他种的物质（如抗生素）。5）捕食：一种生物直接吞食另一种（如原生动物吞食细菌）。"},
-  {topic:"微生物生态",q:"微生物在氮素循环中的作用有哪些？",
-   a:"1）固氮作用：N₂→NH₃（固氮菌、根瘤菌）。2）氨化作用：有机氮→NH₃（腐败微生物）。3）硝化作用：NH₃→NO₂⁻→NO₃⁻（亚硝化细菌、硝化细菌）。4）反硝化作用：NO₃⁻→N₂（反硝化细菌）。5）氨同化作用：NH₃→氨基酸（微生物自身利用）。"},
-];
-
-const QUESTIONS = [
-  // === 绪论 ===
-  {chapter:"绪论",q:"微生物的五大共性不包括以下哪项？",opts:["体积小面积大","吸收快转化快","生长旺繁殖快","有性繁殖为主"],answer:3,explain:"微生物五大共性：体积小面积大、吸收快转化快、生长旺繁殖快、适应强易变异、分布广种类多。微生物以无性繁殖（二等分裂）为主。"},
-  {chapter:"绪论",q:"被誉为'微生物学之父'的科学家是？",opts:["列文虎克","巴斯德","科赫","弗莱明"],answer:1,explain:"巴斯德（Pasteur）通过曲颈瓶实验否定自然发生说、发明巴斯德消毒法、研制疫苗，被誉为微生物学之父。"},
-  {chapter:"绪论",q:"首次观察到微生物的科学家是？",opts:["巴斯德","列文虎克","科赫","林奈"],answer:1,explain:"1676年，荷兰人列文虎克（Leeuwenhoek）用自制的显微镜首次观察到微生物。"},
-  {chapter:"绪论",q:"提出柯赫准则的科学家是？",opts:["巴斯德","列文虎克","科赫","贝耶林克"],answer:2,explain:"科赫建立了微生物分离纯化技术，提出了证实病原菌的柯赫四准则。"},
-  {chapter:"绪论",q:"Woese三域系统不包括？",opts:["细菌(Bacteria)","古生菌(Archaea)","真核生物(Eukarya)","真菌(Fungi)"],answer:3,explain:"Woese三域：细菌、古生菌和真核生物。"},
-  {chapter:"绪论",q:"Whittaker五界系统不包括？",opts:["原核生物界","原生生物界","病毒界","真菌界"],answer:2,explain:"五界系统：原核生物界、原生生物界、真菌界、动物界、植物界。"},
-  {chapter:"绪论",q:"巴斯德的曲颈瓶实验证明了什么？",opts:["微生物是自然发生的","微生物来自空气中的微生物","发酵的本质","消毒的方法"],answer:1,explain:"巴斯德曲颈瓶实验证明空气中含有微生物，加热灭菌后的肉汤在曲颈瓶中不会腐败，否定了自然发生说。"},
-  // === 原核微生物 ===
-  {chapter:"原核微生物",q:"革兰氏阳性菌细胞壁特有的成分是？",opts:["脂多糖","磷壁酸","肽聚糖","膜蛋白"],answer:1,explain:"G⁺菌特有磷壁酸(teichoic acid)，G⁻菌特有脂多糖(LPS)。"},
-  {chapter:"原核微生物",q:"革兰氏阴性菌中起内毒素作用的是？",opts:["磷壁酸","肽聚糖","脂多糖(LPS)","脂蛋白"],answer:2,explain:"脂多糖(LPS)的类脂A部分具有内毒素活性，是G⁻菌致病的重要因素。"},
-  {chapter:"原核微生物",q:"肽聚糖双糖单位由哪两种糖组成？",opts:["葡萄糖和果糖","NAG和NAM","甘露糖和半乳糖","核糖和脱氧核糖"],answer:1,explain:"N-乙酰葡萄糖胺(NAG)和N-乙酰胞壁酸(NAM)通过β-1,4糖苷键连接。"},
-  {chapter:"原核微生物",q:"细菌芽孢的主要功能是？",opts:["繁殖","运动","抗逆性休眠","附着"],answer:2,explain:"芽孢是抗逆性休眠体。一个细菌只形成一个芽孢，不是繁殖结构。"},
-  {chapter:"原核微生物",q:"G⁺菌经革兰氏染色酒精脱色后呈何色？",opts:["红色","紫色","无色","蓝色"],answer:1,explain:"G⁺菌肽聚糖厚，酒精脱水孔缩小，结晶紫保留呈紫色。G⁻菌被脱色后呈红色。"},
-  {chapter:"原核微生物",q:"细菌的特殊结构不包括？",opts:["荚膜","鞭毛","芽孢","核区"],answer:3,explain:"基本结构：细胞壁、细胞膜、细胞质、核区。特殊结构：荚膜、鞭毛、芽孢、菌毛。"},
-  {chapter:"原核微生物",q:"以下哪种细菌无细胞壁？",opts:["大肠杆菌","金黄色葡萄球菌","支原体","枯草杆菌"],answer:2,explain:"支原体无细胞壁，细胞膜含甾醇，是最小的可独立生活的细胞。"},
-  {chapter:"原核微生物",q:"放线菌的主要经济价值是？",opts:["固氮","产抗生素","酿酒","污水处理"],answer:1,explain:"放线菌（尤其是链霉菌）产生约90%的抗生素。"},
-  {chapter:"原核微生物",q:"细菌荚膜的主要化学成分是？",opts:["蛋白质和核酸","多糖和多肽","脂类和核酸","纤维素和几丁质"],answer:1,explain:"荚膜主要成分为水（90%以上）以及多糖或多肽。"},
-  {chapter:"原核微生物",q:"大肠杆菌属于？",opts:["G⁺球菌","G⁻杆菌","G⁺杆菌","G⁻球菌"],answer:1,explain:"大肠杆菌(E. coli)是G⁻杆菌，肠道正常菌群。"},
-  {chapter:"原核微生物",q:"鞭毛的化学本质是？",opts:["多糖","脂类","蛋白质","核酸"],answer:2,explain:"鞭毛主要化学成分是蛋白质（鞭毛蛋白），是细菌的运动器官。"},
-  {chapter:"原核微生物",q:"蓝细菌的营养类型是？",opts:["化能异养","光能自养（产氧）","光能自养（不产氧）","化能自养"],answer:1,explain:"蓝细菌含叶绿素a，进行放氧型光合作用，属'先锋生物'。"},
-  {chapter:"原核微生物",q:"细菌菌落的特点是？",opts:["干燥不透明","湿润透明","绒毛状疏松","大而厚乳白"],answer:1,explain:"细菌菌落湿润、透明或稍透明、小而突起。"},
-  {chapter:"原核微生物",q:"性菌毛与哪种功能有关？",opts:["运动","接合","附着","产毒"],answer:1,explain:"性菌毛是接合时传递遗传物质（F质粒）的通道。"},
-  {chapter:"原核微生物",q:"肽聚糖中的短肽尾氨基酸顺序是？",opts:["L-Ala-D-Glu-L-Lys-D-Ala","D-Ala-L-Lys-D-Glu-L-Ala","L-Ala-L-Lys-D-Glu-D-Ala","L-Lys-D-Ala-L-Ala-D-Glu"],answer:0,explain:"短肽尾为L-Ala-D-Glu-L-Lys（或DAP）-D-Ala。"},
-  // === 真核微生物 ===
-  {chapter:"真核微生物",q:"酵母菌的主要繁殖方式是？",opts:["芽殖","裂殖","孢子繁殖","有性生殖"],answer:0,explain:"酵母菌以出芽繁殖（芽殖）最普遍，少数裂殖。"},
-  {chapter:"真核微生物",q:"以下哪种属于真核微生物？",opts:["大肠杆菌","链霉菌","酿酒酵母","蓝细菌"],answer:2,explain:"酿酒酵母是真核真菌。大肠杆菌、链霉菌、蓝细菌是原核。"},
-  {chapter:"真核微生物",q:"霉菌菌丝按有无隔膜分为？",opts:["营养菌丝和气生菌丝","有隔菌丝和无隔菌丝","基内菌丝和孢子丝","生殖菌丝和营养菌丝"],answer:1,explain:"无隔菌丝（低等真菌：根霉）和有隔菌丝（高等真菌：青霉）。"},
-  {chapter:"真核微生物",q:"以下哪项是真菌的有性孢子？",opts:["分生孢子","孢囊孢子","担孢子","节孢子"],answer:2,explain:"有性孢子：卵孢子、接合孢子、子囊孢子、担孢子。"},
-  {chapter:"真核微生物",q:"酵母菌细胞壁主要含？",opts:["肽聚糖","几丁质","甘露聚糖","纤维素"],answer:2,explain:"酵母菌细胞壁含甘露聚糖、葡聚糖、蛋白质和类脂。"},
-  {chapter:"真核微生物",q:"原核与真核核糖体区别？",opts:["原核80S/真核70S","原核70S/真核80S","都是70S","都是80S"],answer:1,explain:"原核核糖体70S（游离胞质），真核细胞质80S（结合内质网）。"},
-  {chapter:"真核微生物",q:"制备酵母菌原生质体用？",opts:["溶菌酶","纤维素酶","蜗牛消化酶","蛋白酶"],answer:2,explain:"蜗牛消化酶(heliase)破坏酵母菌细胞壁。"},
-  {chapter:"真核微生物",q:"根霉区别于毛霉的特征是？",opts:["假根","子囊果","担子","孢子囊"],answer:0,explain:"根霉有假根和匍匐菌丝，毛霉无假根。"},
-  // === 病毒 ===
-  {chapter:"病毒",q:"病毒区别于细胞型生物的最主要特征是？",opts:["个体微小","能引起疾病","只含一种核酸","抗抗生素"],answer:2,explain:"病毒只含一种核酸(DNA或RNA)，细胞型生物同时含DNA和RNA。"},
-  {chapter:"病毒",q:"T4噬菌体的核酸是？",opts:["单链RNA","双链RNA","单链DNA","双链DNA"],answer:3,explain:"T4噬菌体含双链DNA(dsDNA)，蝌蚪形复杂结构。"},
-  {chapter:"病毒",q:"一步生长曲线三个时期是？",opts:["延滞对数稳定","潜伏裂解稳定","吸附侵入释放","迟滞指数衰亡"],answer:1,explain:"潜伏期、裂解期、稳定期。"},
-  {chapter:"病毒",q:"整合在宿主染色体上的温和噬菌体DNA称？",opts:["病毒粒子","前噬菌体","类病毒","朊病毒"],answer:1,explain:"前噬菌体(prophage)是整合在溶源细胞染色体上的噬菌体核酸。"},
-  {chapter:"病毒",q:"以下哪种属于亚病毒？",opts:["T4噬菌体","TMV","朊病毒","HIV"],answer:2,explain:"亚病毒：类病毒(RNA)、拟病毒、朊病毒（仅蛋白质）。"},
-  {chapter:"病毒",q:"裂解量是指？",opts:["吸附率","每个细胞释放的新病毒数","死亡率","突变率"],answer:1,explain:"裂解量(burst size)=每个被感染细胞释放的新噬菌体平均数。"},
-  {chapter:"病毒",q:"溶源性细菌的特性不包括？",opts:["免疫性","自发裂解","对同源噬菌体敏感","遗传性"],answer:2,explain:"溶源性细菌对同源噬菌体具有免疫性，不会被再次感染裂解。"},
-  // === 营养 ===
-  {chapter:"营养",q:"化能自养型微生物的能量来源是？",opts:["光能","有机物氧化","无机物氧化","ATP"],answer:2,explain:"化能自养通过氧化无机物（H₂、H₂S、NH₃等）获能，以CO₂为碳源。"},
-  {chapter:"营养",q:"微生物吸收营养的主要方式是？",opts:["单纯扩散","促进扩散","主动运输","基团转位"],answer:2,explain:"主动运输逆浓度梯度，需载体和能量，是主要方式。"},
-  {chapter:"营养",q:"哪种物质可通过单纯扩散进入细胞？",opts:["葡萄糖","氨基酸","甘油","核苷酸"],answer:2,explain:"单纯扩散仅限于水、CO₂、O₂、甘油、乙醇等。"},
-  {chapter:"营养",q:"生长因子属于？",opts:["大量元素","微量有机物","无机盐","能源"],answer:1,explain:"生长因子是调节代谢必需的微量有机物，包括维生素、氨基酸等。"},
-  {chapter:"营养",q:"鉴别培养基的用途是？",opts:["富集菌","区分菌落","提供营养","抑制杂菌"],answer:1,explain:"鉴别培养基含指示剂，通过显色反应区分不同菌落。"},
-  {chapter:"营养",q:"牛肉膏蛋白胨培养基属于？",opts:["合成培养基","天然培养基","半合成培养基","鉴别培养基"],answer:1,explain:"由天然物质（牛肉膏、蛋白胨）配制，化学成分不完全清楚。"},
-  {chapter:"营养",q:"基团转位中被运输糖类发生？",opts:["氧化","还原","磷酸化","脱氢"],answer:2,explain:"糖类被磷酸化（PEP提供磷酸基），属于基团转位。"},
-  // === 代谢 ===
-  {chapter:"代谢",q:"EMP途径1分子葡萄糖净产ATP数为？",opts:["1个","2个","4个","36个"],answer:1,explain:"EMP净产2ATP、2NADH₂和2丙酮酸。"},
-  {chapter:"代谢",q:"微生物特有的底物脱氢途径是？",opts:["EMP","HMP","ED途径","TCA"],answer:2,explain:"ED途径是微生物所特有的底物脱氢途径。"},
-  {chapter:"代谢",q:"有氧呼吸的最终氢受体是？",opts:["有机物","无机物","O₂","CO₂"],answer:2,explain:"有氧呼吸以分子氧(O₂)为最终氢受体，产生约38ATP。"},
-  {chapter:"代谢",q:"巴斯德效应指什么？",opts:["氧抑制发酵","葡萄糖抑制乳糖利用","温度抑制生长","pH抑制酶"],answer:0,explain:"氧气抑制酵母菌酒精发酵，称巴斯德效应。"},
-  {chapter:"代谢",q:"固氮酶对什么敏感？",opts:["温度","pH","氧气","紫外线"],answer:2,explain:"固氮酶（MoFe蛋白+Fe蛋白）对氧极度敏感，遇氧失活。"},
-  {chapter:"代谢",q:"TCA循环的主要作用是？",opts:["产大量ATP","合成氨基酸","代谢枢纽","产还原力"],answer:2,explain:"TCA循环是分解代谢和合成代谢连为一体的代谢枢纽。"},
-  {chapter:"代谢",q:"青霉素抑制细菌的机制是？",opts:["抑制蛋白质合成","破坏细胞膜","抑制转肽酶","抑制DNA复制"],answer:2,explain:"青霉素是D-丙-D-丙结构类似物，抑制转肽酶，阻止肽聚糖交联。"},
-  {chapter:"代谢",q:"乙醇发酵的产物是？",opts:["乳酸","乙醇+CO₂","乙酸","丁酸"],answer:1,explain:"酵母菌将葡萄糖→丙酮酸→乙醛→乙醇+CO₂。"},
-  {chapter:"代谢",q:"光合磷酸化中不产氧的类型是？",opts:["非循环式","循环式","紫膜式","蓝细菌式"],answer:1,explain:"循环式光合磷酸化（光合细菌）不产氧，非循环式（蓝细菌/植物）产氧。"},
-  // === 生长 ===
-  {chapter:"生长",q:"细菌生长曲线中菌量最大的时期是？",opts:["延滞期","对数期","稳定期","衰亡期"],answer:2,explain:"稳定期活菌数达最高值，新增殖数与死亡数相等。"},
-  {chapter:"生长",q:"高压蒸汽灭菌标准条件是？",opts:["100℃30min","121℃20-30min","160℃60min","180℃10min"],answer:1,explain:"高压蒸汽灭菌121℃、20-30分钟。"},
-  {chapter:"生长",q:"以下哪种属专性厌氧菌？",opts:["大肠杆菌","枯草杆菌","梭菌属","酿酒酵母"],answer:2,explain:"梭菌属(Clostridium)只能在无氧条件下生长。"},
-  {chapter:"生长",q:"霉菌最适生长pH是？",opts:["6.5-7.5","7.5-8","5-6","1.5-2"],answer:2,explain:"细菌6.5-7.5、放线菌7.5-8、霉菌5-6。"},
-  {chapter:"生长",q:"消毒与灭菌的区别？",opts:["消毒杀所有/灭菌杀病原","消毒杀病原/灭菌杀所有","无区别","消毒物理/灭菌化学"],answer:1,explain:"消毒杀病原微生物，灭菌杀所有微生物（含芽孢）。"},
-  {chapter:"生长",q:"细菌接种后最初菌数不增加的时期是？",opts:["对数期","延滞期","稳定期","衰亡期"],answer:1,explain:"延滞期菌数几乎不变，细胞合成新酶系适应环境。"},
-  {chapter:"生长",q:"紫外线杀菌的机制是？",opts:["破坏壁","使蛋白变性","形成嘧啶二聚体","破坏膜"],answer:2,explain:"UV使DNA相邻T形成胸腺嘧啶二聚体，阻碍碱基正常配对。"},
-  // === 遗传 ===
-  {chapter:"遗传",q:"Avery实验证明遗传物质是？",opts:["蛋白质","DNA","RNA","脂类"],answer:1,explain:"Avery(1944)通过体外转化实验证明DNA是遗传物质。"},
-  {chapter:"遗传",q:"F⁺与F⁻杂交后受体菌变为？",opts:["F⁺","F⁻","Hfr","F'"],answer:0,explain:"F因子通过性菌毛转移，双方均成为F⁺。"},
-  {chapter:"遗传",q:"质粒不具备哪种特性？",opts:["自我复制","稳定遗传","细胞必需","可转移"],answer:2,explain:"质粒是非必要的，失去质粒不影响细胞存活。"},
-  {chapter:"遗传",q:"Hfr菌株的F因子状态是？",opts:["游离胞质","整合到染色体","已丢失","形成F'"],answer:1,explain:"Hfr菌株F因子整合到细菌染色体上。"},
-  {chapter:"遗传",q:"普遍转导的媒介是？",opts:["游离DNA","缺陷噬菌体","性菌毛","化学试剂"],answer:1,explain:"完全缺陷噬菌体误包供体菌DNA介导普遍转导。"},
-  {chapter:"遗传",q:"哪种修复会引起基因突变？",opts:["光复活","切除修复","重组修复","SOS修复"],answer:3,explain:"SOS修复是易误修复，其余三种为无错误修复。"},
-  {chapter:"遗传",q:"证明突变自发性的实验不包括？",opts:["变量试验","涂布试验","转化实验","影印培养"],answer:2,explain:"转化实验证明DNA是遗传物质。"},
-  {chapter:"遗传",q:"F因子属于哪种质粒？",opts:["R因子","Col因子","致育因子","Ti质粒"],answer:2,explain:"F因子（致育因子）决定细菌性别，控制接合转移。"},
-  {chapter:"遗传",q:"营养缺陷型在哪种培养基上不能生长？",opts:["完全培养基","补充培养基","基本培养基","天然培养基"],answer:2,explain:"基本培养基(MM)仅最低成分，不能支持营养缺陷型生长。"},
-  // === 生态 ===
-  {chapter:"生态",q:"地衣是哪两种生物的共生体？",opts:["藻类和真菌","细菌和真菌","藻类和细菌","真菌和原生动物"],answer:0,explain:"地衣是藻类（或蓝细菌）与真菌的共生体。"},
-  {chapter:"生态",q:"反硝化作用将硝酸盐还原为？",opts:["氨气","氮气(N₂)","亚硝酸","氮氧化物"],answer:1,explain:"反硝化：NO₃⁻→NO₂⁻→N₂（反硝化细菌）。"},
-  {chapter:"生态",q:"BOD₅表示什么？",opts:["化学需氧量","五日生化需氧量","总有机碳","溶解氧"],answer:1,explain:"BOD₅是20℃下1L污水有机物5日氧化消耗的O₂毫克数。"},
-  {chapter:"生态",q:"活性污泥的主要成分是？",opts:["无机沉淀","微生物+有机物","化学絮凝剂","沙石"],answer:1,explain:"活性污泥由微生物群体、悬浮有机物构成的凝絮团。"},
-  {chapter:"生态",q:"大肠菌群作为什么指标？",opts:["总菌数","粪便污染","病毒污染","重金属污染"],answer:1,explain:"大肠菌群指示粪便污染，是水和食品的卫生细菌学指标。"},
-  {chapter:"生态",q:"固氮作用关键酶是？",opts:["硝酸还原酶","固氮酶","氮氧化酶","氨化酶"],answer:1,explain:"固氮酶(MoFe蛋白+Fe蛋白)催化N₂→NH₃。"},
-];
-
-const LATIN_NAMES = [
-  {group:"细菌",name:"假单胞菌属",latin:"Pseudomonas",level:"red"},
-  {group:"细菌",name:"固氮菌属",latin:"Azotobacter",level:"red"},
-  {group:"细菌",name:"根瘤菌属",latin:"Rhizobium",level:"red"},
-  {group:"细菌",name:"大肠杆菌",latin:"Escherichia coli",level:"red"},
-  {group:"细菌",name:"沙门氏菌属",latin:"Salmonella",level:"red"},
-  {group:"细菌",name:"葡萄球菌属",latin:"Staphylococcus",level:"red"},
-  {group:"细菌",name:"金黄色葡萄球菌",latin:"Staphylococcus aureus",level:"red"},
-  {group:"细菌",name:"链球菌属",latin:"Streptococcus",level:"red"},
-  {group:"细菌",name:"乳杆菌属",latin:"Lactobacillus",level:"red"},
-  {group:"细菌",name:"芽胞杆菌属",latin:"Bacillus",level:"red"},
-  {group:"细菌",name:"苏云金芽胞杆菌",latin:"Bacillus thuringiensis",level:"red"},
-  {group:"细菌",name:"枯草芽胞杆菌",latin:"Bacillus subtilis",level:"red"},
-  {group:"细菌",name:"炭疽芽胞杆菌",latin:"Bacillus anthracis",level:"red"},
-  {group:"细菌",name:"梭菌属",latin:"Clostridium",level:"red"},
-  {group:"细菌",name:"分枝杆菌属",latin:"Mycobacterium",level:"red"},
-  {group:"细菌",name:"链霉菌属",latin:"Streptomyces",level:"red"},
-  {group:"细菌",name:"弧菌属",latin:"Vibrio",level:"red"},
-  {group:"细菌",name:"立克次氏体属",latin:"Rickettsia",level:"red"},
-  {group:"细菌",name:"醋杆菌属",latin:"Acetobacter",level:"red"},
-  {group:"古细菌",name:"甲烷杆菌属",latin:"Methanobacterium",level:"red"},
-  {group:"古细菌",name:"盐杆菌属",latin:"Halobacterium",level:"red"},
-  {group:"真菌",name:"酵母属",latin:"Saccharomyces",level:"red"},
-  {group:"真菌",name:"酿酒酵母",latin:"Saccharomyces cerevisiae",level:"red"},
-  {group:"真菌",name:"假丝酵母属",latin:"Candida",level:"red"},
-  {group:"真菌",name:"毛霉属",latin:"Mucor",level:"red"},
-  {group:"真菌",name:"根霉属",latin:"Rhizopus",level:"red"},
-  {group:"真菌",name:"曲霉属",latin:"Aspergillus",level:"red"},
-  {group:"真菌",name:"青霉属",latin:"Penicillium",level:"red"},
-  {group:"病毒",name:"慢病毒属(HIV)",latin:"Lentivirus",level:"red"},
-  {group:"病毒",name:"烟草花叶病毒",latin:"Tobamovirus",level:"red"},
-  {group:"病毒",name:"T4噬菌体",latin:"T4-like viruses",level:"red"},
-  {group:"细菌",name:"慢生根瘤菌属",latin:"Bradyrhizobium",level:"blue"},
-  {group:"细菌",name:"欧文氏菌属",latin:"Erwinia",level:"blue"},
-  {group:"细菌",name:"沙雷氏菌属",latin:"Serratia",level:"blue"},
-  {group:"细菌",name:"变形杆菌属",latin:"Proteus",level:"blue"},
-  {group:"细菌",name:"蛭弧菌属",latin:"Bdellovibrio",level:"blue"},
-  {group:"细菌",name:"衣原体属",latin:"Chlamydia",level:"blue"},
-  {group:"细菌",name:"支原体属",latin:"Mycoplasma",level:"blue"},
-  {group:"细菌",name:"黏球菌属",latin:"Myxococcus",level:"blue"},
-  {group:"细菌",name:"着色菌属",latin:"Chromatium",level:"blue"},
-  {group:"细菌",name:"绿菌属",latin:"Chlorobium",level:"blue"},
-  {group:"细菌",name:"鱼腥蓝细菌属",latin:"Anabaena",level:"blue"},
-  {group:"细菌",name:"念珠蓝细菌属",latin:"Nostoc",level:"blue"},
-  {group:"细菌",name:"硫杆菌属",latin:"Thiobacillus",level:"blue"},
-  {group:"细菌",name:"土壤杆菌属",latin:"Agrobacterium",level:"blue"},
-  {group:"细菌",name:"亚硝化单胞菌属",latin:"Nitrosomonas",level:"blue"},
-  {group:"细菌",name:"硝酸杆菌属",latin:"Nitrobacter",level:"blue"},
-  {group:"细菌",name:"八叠球菌属",latin:"Sarcina",level:"blue"},
-  {group:"细菌",name:"微球菌属",latin:"Micrococcus",level:"blue"},
-  {group:"细菌",name:"明串珠菌属",latin:"Leuconostoc",level:"blue"},
-  {group:"细菌",name:"奈氏球菌属",latin:"Neisseria",level:"blue"},
-  {group:"细菌",name:"丙酸杆菌属",latin:"Propionibacterium",level:"blue"},
-  {group:"细菌",name:"棒状杆菌属",latin:"Corynebacterium",level:"blue"},
-  {group:"细菌",name:"双歧杆菌属",latin:"Bifidobacterium",level:"blue"},
-  {group:"细菌",name:"诺卡氏菌属",latin:"Nocardia",level:"blue"},
-  {group:"细菌",name:"弗兰克氏菌属",latin:"Frankia",level:"blue"},
-  {group:"细菌",name:"小单胞菌属",latin:"Micromonospora",level:"blue"},
-  {group:"细菌",name:"高温放线菌属",latin:"Thermoactinomyces",level:"blue"},
-  {group:"古细菌",name:"甲烷球菌属",latin:"Methanococcus",level:"blue"},
-  {group:"古细菌",name:"盐球菌属",latin:"Halococcus",level:"blue"},
-  {group:"古细菌",name:"热网菌属",latin:"Pyrodictium",level:"blue"},
-  {group:"古细菌",name:"热原体属",latin:"Thermoplasma",level:"blue"},
-  {group:"真菌",name:"裂殖酵母属",latin:"Schizosaccharomyces",level:"blue"},
-  {group:"真菌",name:"汉逊酵母属",latin:"Hansenula",level:"blue"},
-  {group:"真菌",name:"红酵母属",latin:"Rhodotorula",level:"blue"},
-  {group:"真菌",name:"葡枝根霉",latin:"Rhizopus stolonifer",level:"blue"},
-  {group:"真菌",name:"脉胞菌属",latin:"Neurospora",level:"blue"},
-  {group:"真菌",name:"银耳属",latin:"Tremella",level:"blue"},
-  {group:"真菌",name:"伞菌属",latin:"Agaricus",level:"blue"},
-  {group:"真菌",name:"香菇属",latin:"Lentinus",level:"blue"},
-  {group:"真菌",name:"木耳属",latin:"Auricularia",level:"blue"},
-  {group:"真菌",name:"平菇",latin:"Pleurotus ostreatus",level:"blue"},
-  {group:"藻类",name:"小球藻属",latin:"Chlorella",level:"blue"},
-  {group:"藻类",name:"水绵属",latin:"Spirogyra",level:"blue"},
-  {group:"原生动物",name:"眼虫属",latin:"Euglena",level:"blue"},
-  {group:"原生动物",name:"变形虫属",latin:"Amoeba",level:"blue"},
-  {group:"原生动物",name:"草履虫属",latin:"Paramecium",level:"blue"},
-  {group:"原生动物",name:"疟原虫属",latin:"Plasmodium",level:"blue"},
-  {group:"病毒",name:"核型多角体病毒属",latin:"Nucleopolyhedrovirus",level:"blue"},
-  {group:"病毒",name:"类病毒",latin:"Pospiviroid",level:"blue"}
-];
-
-const EXAM_PAPERS = {
-  A:{name:"微生物学教程 试卷 A",sections:[
-    {title:"一、名词解释",type:"term",items:[{q:"无菌技术",a:"防止纯培养被污染的技术"},{q:"菌落",a:"单个细胞繁殖形成的肉眼可见子细胞群体"},{q:"发酵",a:"无氧条件下底物脱氢不经呼吸链传递的低效产能反应"},{q:"培养基",a:"人工配制的供微生物生长用的营养基质"},{q:"平板",a:"凝固后的固体培养基平面"}]},
-    {title:"二、填空题",type:"fill",items:[{q:"细菌基本形态：____、____、____",a:"球形、杆形、螺旋形"},{q:"霉菌菌丝分为____（如根霉）和____（如青霉）",a:"无隔菌丝、有隔菌丝"},{q:"细菌特殊结构：____、____、____、____",a:"芽孢、鞭毛、菌毛、荚膜"},{q:"营养物五类：____、____、____、____、____",a:"碳源、氮源、无机盐、生长因子、水"},{q:"命名法：____，即____加____",a:"双名法、属名、种名"}]},
-    {title:"三、选择题",type:"choice",items:[{q:"产生假根的是",a:"根霉",opts:["根霉","酵母菌","青霉","曲霉"]},{q:"G+菌特有成分",a:"磷壁酸",opts:["蛋白质","肽聚糖","脂多糖","磷壁酸"]},{q:"EMP途径获得ATP数",a:"2个",opts:["2个","4个","36个","38个"]},{q:"对数期细菌特点",a:"生长迅速",opts:["生长缓慢","生长迅速","大多死亡","代时长"]},{q:"高压蒸汽灭菌参数",a:"121℃ 20-30min",opts:["100℃ 30min","180℃ 10min","121℃ 20-30min","160℃ 60min"]},{q:"霉菌适宜pH",a:"4.0-6.0",opts:["<4.0","4.0-6.0","6.5-8.0","8.0"]}]},
-    {title:"四、判断题",type:"tf",items:[{q:"溶菌酶抑制G+菌肽聚糖合成",a:"×（溶菌酶水解肽聚糖）"},{q:"琼脂浓度一般为2%",a:"√"},{q:"ED途径是微生物特有的",a:"√"},{q:"高压蒸汽灭菌适用于一切物品",a:"×"},{q:"自发突变具有不对应性和稀有性",a:"√"}]},
-    {title:"五、简答题",type:"sa",items:[{q:"革兰氏染色原理？",a:"G+菌：肽聚糖含量高，乙醇脱水孔缩小，结晶紫保留。G-菌：脂含量高，乙醇溶脂，结晶紫溶出，复染呈红色。"},{q:"微生物营养类型？各举一例。",a:"1）光能自养（蓝细菌）2）光能异养（红螺菌）3）化能自养（硫化细菌）4）化能异养（黑曲霉）"}]}
-  ]},
-  B:{name:"微生物学 试卷 B",sections:[
-    {title:"一、名词解释",type:"term",items:[{q:"微生物",a:"个体微小、结构简单的低等生物"},{q:"病毒",a:"成熟、结构完整、有感染性的单个病毒"},{q:"无氧呼吸",a:"以无机化合物为最终氢受体的生物氧化"},{q:"同步生长",a:"群体细胞分裂步调一致的生长状态"},{q:"营养",a:"摄取必需能量和物质以满足生长繁殖的生理功能"}]},
-    {title:"二、填空题",type:"fill",items:[{q:"细菌特殊构造：____、____、____、____",a:"芽孢、鞭毛、菌毛、糖被"},{q:"物质运输方式：____、____、____、____",a:"被动扩散、协助扩散、主动运输、基团移位"},{q:"证明核酸是遗传物质的实验：____、____、____",a:"转化实验、噬菌体感染实验、病毒重建实验"},{q:"基因重组方式：____、____、____、____",a:"转化、转导、接合、原生质体融合"}]},
-    {title:"三、选择题",type:"choice",items:[{q:"纯培养是其中",a:"只有一种微生物",opts:["只有一种微生物","只有一种营养物","除主要微生物外只有一种","无代谢废物"]},{q:"紫外线主要作用于",a:"核酸",opts:["核酸","酶类","糖类","细胞壁"]},{q:"青霉素主要用于抗",a:"革兰氏阳性菌",opts:["病毒","真菌","G-菌","G+菌"]},{q:"质粒非必需的",a:"细菌存活所必需",opts:["自我复制DNA环","有10-50个基因","细菌存活所必需","接合所必需"]}]},
-    {title:"四、判断题",type:"tf",items:[{q:"巴斯德曲颈瓶实验否定了自生说",a:"√"},{q:"金黄色葡萄球菌有肽聚糖",a:"√"},{q:"微生物可合成自身生长因子不必外摄",a:"×"},{q:"被动运输需载体和能量",a:"×"},{q:"抗性突变由环境诱发",a:"×"},{q:"核酸杂交是现代鉴定方法",a:"√"}]},
-    {title:"五、简答题",type:"sa",items:[{q:"芽孢耐热机制？",a:"芽孢衣对水和多价阳离子透性差，皮层离子强度高产生高渗透压夺取核心水分，核心高度失水，具极强耐热性。"},{q:"生长曲线分几个阶段？",a:"延滞期→对数期→稳定期→衰亡期"}]}
-  ]},
-  C:{name:"微生物学 试卷 C",sections:[
-    {title:"一、名词解释",type:"term",items:[{q:"噬菌斑",a:"噬菌体裂解宿主在菌苔上形成的透明圈"},{q:"溶源性",a:"温和噬菌体DNA整合到宿主基因组并同步复制"},{q:"转化",a:"受体菌接受供体菌DNA获得新性状"},{q:"消毒",a:"杀死病原微生物的措施"},{q:"微生物学",a:"研究微生物形态构造及生命活动规律的学科"}]},
-    {title:"二、填空题",type:"fill",items:[{q:"一步生长曲线三期：____、____、____",a:"潜伏期、裂解期、稳定期"},{q:"生物氧化四条途径：____、____、____、____，微生物特有____",a:"EMP、HMP、ED、TCA，ED"},{q:"杀抑微生物方式：____、____、____、____",a:"灭菌、消毒、防腐、化疗"},{q:"菌间五种关系：____、____、____、____、____",a:"互生、共生、寄生、拮抗、捕食"}]},
-    {title:"三、选择题",type:"choice",items:[{q:"外科消毒术发明者",a:"李斯特",opts:["科赫","李斯特","弗莱明","巴斯德"]},{q:"细菌基本结构是",a:"拟核",opts:["荚膜","拟核","芽孢","鞭毛"]},{q:"磺胺药与何结构类似",a:"对氨基苯甲酸",opts:["对氨基苯甲酸","二氢蝶酸","戊二醛","四氢叶酸"]},{q:"制备酵母原生质体用",a:"蜗牛消化酶",opts:["溶菌酶","蜗牛消化酶","青霉素","制霉菌素"]}]},
-    {title:"四、判断题",type:"tf",items:[{q:"原核微生物无定形核",a:"√"},{q:"细菌芽孢是繁殖构造",a:"×（是休眠体）"},{q:"主动运输需载体和能量",a:"√"},{q:"泡菜靠乳酸菌拮抗作用",a:"√"},{q:"分类顺序为界门纲目科属种",a:"×（正确：界门纲目科属种）"}]},
-    {title:"五、简答题",type:"sa",items:[{q:"酵母菌的特点？",a:"1）单细胞 2）出芽繁殖 3）发酵糖类产能 4）细胞壁含甘露聚糖 5）喜含糖高酸度环境"},{q:"影响转化效率的因素？",a:"1）受体细胞感受态 2）限制酶系统 3）供受体染色体同源性"}]}
-  ]}
+const DATA = {
+  terms: [
+    {n:"氨基酸异养型微生物",d:"利用非氨基酸类简单氮源自行合成一切氨基酸",l:"A"},
+    {n:"氨化作用",d:"含氮有机物经微生物分解产生氨",l:"A"},
+    {n:"伴胞晶体",d:"芽孢杆菌形成芽孢时产生的菱形碱溶性蛋白晶体，对昆虫有毒杀作用",l:"B"},
+    {n:"鞭毛",d:"细菌表面的长丝状波曲蛋白质，运动器官",l:"B"},
+    {n:"病毒",d:"只含一种核酸、专性活细胞内寄生的超显微非细胞结构分子生物",l:"B"},
+    {n:"巴斯德效应",d:"酵母菌酒精发酵时通入氧气，发酵减慢，氧对发酵的抑制现象",l:"B"},
+    {n:"半合成培养基",d:"化学试剂配制的含天然成分的培养基",l:"B"},
+    {n:"变异",d:"遗传物质结构和数量的改变",l:"B"},
+    {n:"发酵",d:"底物脱氢后不经呼吸链传递，最终被外源性氢受体接受的低效产能反应",l:"F"},
+    {n:"防腐",d:"抑制霉腐微生物生长繁殖的措施",l:"F"},
+    {n:"反硝化作用",d:"反硝化细菌将硝酸盐还原成氮气的过程",l:"F"},
+    {n:"共生关系",d:"两种生物紧密依赖、互相协作、不可分离的关系",l:"G"},
+    {n:"基因突变",d:"细胞内遗传物质的分子结构或数量突然发生的可遗传变化",l:"J"},
+    {n:"荚膜",d:"细菌细胞壁外有明显界限的胶状物质层，主要成分为多糖或多肽",l:"J"},
+    {n:"菌落",d:"单个细胞在固体培养基上繁殖形成的肉眼可见的子细胞集团",l:"J"},
+    {n:"菌毛",d:"细菌体表的纤细中空短直蛋白质附属物，附着功能",l:"J"},
+    {n:"接合",d:"F质粒通过性菌毛直接接触传递的遗传重组方式",l:"J"},
+    {n:"抗生素",d:"低浓度抑制其他微生物生长的微生物次生代谢产物",l:"K"},
+    {n:"抗原",d:"能诱导机体产生免疫应答并与相应抗体特异性结合的物质",l:"K"},
+    {n:"抗体",d:"浆细胞产生的能与相应抗原特异性结合的免疫球蛋白",l:"K"},
+    {n:"烈性噬菌体",d:"侵入敏感细菌后迅速增殖并引起宿主细胞裂解的噬菌体",l:"L"},
+    {n:"灭菌",d:"杀死所有微生物（含芽孢）的措施",l:"M"},
+    {n:"内毒素",d:"G-菌外壁层中的脂多糖(LPS)，细菌溶解时释放",l:"N"},
+    {n:"培养基",d:"人工配制的供微生物生长繁殖用的营养基质",l:"P"},
+    {n:"前噬菌体",d:"整合在溶源细胞染色体上的噬菌体核酸",l:"Q"},
+    {n:"溶源性",d:"温和噬菌体DNA整合到宿主基因组并同步复制，不裂解细胞",l:"R"},
+    {n:"朊病毒",d:"不含核酸的传染性蛋白质分子，可引起同类蛋白构象变化",l:"R"},
+    {n:"噬菌体",d:"原核生物的病毒",l:"S"},
+    {n:"生物固氮",d:"分子氮通过固氮酶催化形成氨的过程",l:"S"},
+    {n:"生长因子",d:"调节代谢必需的微量有机物",l:"S"},
+    {n:"生长曲线",d:"以菌数对数为纵坐标、时间为横坐标的有规律曲线",l:"S"},
+    {n:"碳源",d:"构成微生物细胞碳架来源的营养物质",l:"T"},
+    {n:"微生物",d:"所有个体微小、结构简单的低等生物总称",l:"W"},
+    {n:"温和噬菌体",d:"不裂解细胞、DNA整合到宿主基因组的噬菌体",l:"W"},
+    {n:"芽孢",d:"某些细菌在后期形成的圆形或椭圆形抗逆性休眠体",l:"Y"},
+    {n:"原生质体",d:"人工除去细菌细胞壁后剩下的缺壁细胞",l:"Y"},
+    {n:"转化",d:"受体菌直接吸收供体菌DNA片段获得新遗传性状",l:"Z"},
+    {n:"转导",d:"缺陷噬菌体为媒介转移供体菌DNA到受体菌",l:"Z"},
+    {n:"真菌",d:"有细胞壁无叶绿体以孢子繁殖的真核微生物",l:"Z"},
+    {n:"支原体",d:"无细胞壁、细胞膜含甾醇的最小原核生物",l:"Z"},
+    {n:"正常菌群",d:"健康动物体内外数量大种类稳定且无害的微生物群",l:"Z"},
+  ],
+  qa: [
+    {t:"细胞结构",q:"G+菌和G-菌细胞壁有何区别？",a:"G+：厚(30-40nm)、肽聚糖含量高(40-90%)、含磷壁酸。G-：薄(8-10nm)、肽聚糖含量低(5-10%)、含脂多糖(LPS)和膜蛋白。"},
+    {t:"细胞结构",q:"革兰氏染色的原理？",a:"G+菌肽聚糖含量高，酒精脱色时失水网孔缩小，结晶紫-碘复合物保留呈紫色。G-菌含脂量高，酒精溶解脂类，结晶紫-碘复合物溶出，脱色后复染呈红色。"},
+    {t:"微生物学史",q:"巴斯德和科赫的主要贡献？",a:"巴斯德：证实发酵实质、否定自然发生说（鹅颈瓶实验）、巴斯德消毒法、疫苗。科赫：分离纯化技术、固体培养基、细菌染色、柯赫准则。"},
+    {t:"真菌",q:"真菌的无性孢子和有性孢子类型？",a:"无性孢子：节孢子、厚垣孢子、分生孢子、孢囊孢子、游动孢子。有性孢子：卵孢子、接合孢子、子囊孢子、担孢子。"},
+    {t:"病毒",q:"T4噬菌体的结构和繁殖过程？",a:"结构：头部（内含DNA）+颈部+尾部（尾鞘、尾髓、尾丝）。繁殖：吸附→侵入（注射DNA）→增殖→装配→释放（裂解）。"},
+    {t:"病毒",q:"温和噬菌体与烈性噬菌体的区别？",a:"烈性噬菌体侵入后迅速增殖并裂解细胞。温和噬菌体DNA整合到宿主染色体形成前噬菌体，随宿主复制而不裂解细胞（溶源性）。"},
+    {t:"营养",q:"微生物四种营养类型？",a:"光能自养（蓝细菌）、光能异养（红螺菌）、化能自养（硝化细菌）、化能异养（大多数微生物）。"},
+    {t:"营养",q:"四种物质运输方式的特点？",a:"单纯扩散（顺梯度、不耗能、无载体）、促进扩散（顺梯度、不耗能、有载体）、主动运输（逆梯度、耗能、有载体，主要方式）、基团转位（逆梯度、耗能、磷酸化）。"},
+    {t:"代谢",q:"比较有氧呼吸、无氧呼吸、发酵？",a:"发酵无氧，底物水平磷酸化，有机物为受体，产2ATP。有氧呼吸有氧，氧化磷酸化，O₂为受体，产38ATP。无氧呼吸无氧，氧化磷酸化，NO₃⁻/SO₄²⁻/CO₂为受体。"},
+    {t:"代谢",q:"生物固氮的条件和反应式？",a:"条件：固氮酶（钼铁蛋白+铁蛋白）、ATP、还原力、严格厌氧微环境。N₂+8[H]+18~24ATP→2NH₃+H₂+18~24ADP+18~24Pi"},
+    {t:"代谢",q:"青霉素的抑菌机制？",a:"青霉素是D-丙-D-丙的结构类似物，抑制转肽酶活性，阻止肽聚糖链之间的交联，使细胞壁无法形成完整网状结构，细菌易破裂死亡。"},
+    {t:"生长",q:"细菌生长曲线四时期？",a:"延滞期（适应环境，菌数不变）→对数期（指数增长，代谢最强）→稳定期（菌数最大，积累产物）→衰亡期（死亡>增殖，细胞自溶）。"},
+    {t:"生长",q:"灭菌与消毒的区别？",a:"灭菌（sterilization）杀死所有微生物包括芽孢，如高压蒸汽灭菌121℃20-30min。消毒（disinfection）只杀死病原微生物，如酒精、紫外线。"},
+    {t:"遗传",q:"质粒的特性？",a:"染色体外自主复制的小型环状DNA。特性：非必需、自我复制、稳定遗传、可转移、可消除、可整合、不相容性。种类：F因子、R因子、Col因子、Ti质粒。"},
+    {t:"遗传",q:"原核基因重组的四种方式？",a:"转化（游离DNA）→转导（噬菌体媒介）→接合（性菌毛接触）→原生质体融合（人工诱导去壁细胞融合）。"},
+    {t:"遗传",q:"DNA损伤修复系统？",a:"光复活（可见光激活光复活酶）→切除修复（切补切封，无错误）→重组修复（复制后，无错误）→SOS修复（应急，易误修复产生突变）。"},
+    {t:"遗传",q:"证明突变自发性的三个实验？",a:"变量试验（Luria-Delbrück）：各培养皿抗性菌落数差异大。涂布试验（Newcombe）：抗性突变在接触噬菌体前已发生。影印培养试验（Lederberg）：从非选择平板检出抗性菌落。"},
+    {t:"生态",q:"微生物间五种关系？",a:"互生（松散联合，双方有利，如根际微生物）→共生（紧密结合形成特殊结构，如地衣=藻+真菌）→寄生（损害宿主，如病原菌）→拮抗（抗生素抑制）→捕食（直接吞食，如原生动物）。"},
+    {t:"生态",q:"氮循环包括哪些过程？",a:"固氮作用（N₂→NH₃，固氮菌/根瘤菌）→氨化作用（有机N→NH₃，腐败微生物）→硝化作用（NH₃→NO₂⁻→NO₃⁻，亚硝化菌/硝化菌）→反硝化作用（NO₃⁻→N₂，反硝化菌）。"},
+  ],
+  quiz: [
+    {c:"绪论",q:"微生物五大共性不包括？",o:["体积小面积大","吸收快转化快","生长旺繁殖快","有性繁殖为主"],a:3},
+    {c:"绪论",q:"被称为微生物学之父的是？",o:["列文虎克","巴斯德","科赫","弗莱明"],a:1},
+    {c:"绪论",q:"Woese三域系统不包括？",o:["细菌","古生菌","真核生物","真菌"],a:3},
+    {c:"原核微生物",q:"G+菌细胞壁特有成分是？",o:["脂多糖","磷壁酸","肽聚糖","膜蛋白"],a:1},
+    {c:"原核微生物",q:"G-菌内毒素成分是？",o:["磷壁酸","肽聚糖","脂多糖","脂蛋白"],a:2},
+    {c:"原核微生物",q:"细菌芽孢的功能是？",o:["繁殖","运动","抗逆休眠","附着"],a:2},
+    {c:"原核微生物",q:"哪类细菌无细胞壁？",o:["大肠杆菌","金葡菌","支原体","枯草杆菌"],a:2},
+    {c:"原核微生物",q:"放线菌的主要价值？",o:["固氮","产抗生素","酿酒","污水处理"],a:1},
+    {c:"原核微生物",q:"蓝细菌的营养类型？",o:["化能异养","光能自养产氧","光能自养不产氧","化能自养"],a:1},
+    {c:"真核微生物",q:"酵母菌主要繁殖方式？",o:["芽殖","裂殖","孢子繁殖","有性生殖"],a:0},
+    {c:"真核微生物",q:"哪种是真核微生物？",o:["大肠杆菌","链霉菌","酿酒酵母","蓝细菌"],a:2},
+    {c:"病毒",q:"病毒主要特征？",o:["个体微小","引起疾病","只含一种核酸","抗抗生素"],a:2},
+    {c:"病毒",q:"T4噬菌体核酸类型？",o:["单链RNA","双链RNA","单链DNA","双链DNA"],a:3},
+    {c:"病毒",q:"类病毒只含有什么？",o:["蛋白质","RNA","DNA","脂类"],a:1},
+    {c:"营养",q:"化能自养型能量来源？",o:["光能","有机物氧化","无机物氧化","ATP"],a:2},
+    {c:"营养",q:"微生物吸收营养的主要方式？",o:["单纯扩散","促进扩散","主动运输","基团转位"],a:2},
+    {c:"代谢",q:"EMP途径净产ATP？",o:["1个","2个","4个","36个"],a:1},
+    {c:"代谢",q:"微生物特有底物脱氢途径？",o:["EMP","HMP","ED","TCA"],a:2},
+    {c:"代谢",q:"巴斯德效应是指？",o:["氧抑制发酵","葡萄糖抑制乳糖","温度抑制生长","pH抑制酶"],a:0},
+    {c:"代谢",q:"固氮酶对什么敏感？",o:["温度","pH","氧气","紫外线"],a:2},
+    {c:"生长",q:"高压蒸汽灭菌标准？",o:["100℃30min","121℃20-30min","160℃60min","180℃10min"],a:1},
+    {c:"生长",q:"紫外线杀菌机制？",o:["破坏细胞壁","使蛋白质变性","形成嘧啶二聚体","破坏细胞膜"],a:2},
+    {c:"生长",q:"微生物最适pH，霉菌为？",o:["6.5-7.5","7.5-8","5-6","1.5-2"],a:2},
+    {c:"遗传",q:"Avery实验证明？",o:["蛋白质是遗传物质","DNA是遗传物质","RNA是遗传物质","脂类是遗传物质"],a:1},
+    {c:"遗传",q:"质粒不具备哪种特性？",o:["自我复制","稳定遗传","细胞必需","可转移"],a:2},
+    {c:"遗传",q:"哪种修复引起基因突变？",o:["光复活","切除修复","重组修复","SOS修复"],a:3},
+    {c:"遗传",q:"F因子属于哪种质粒？",o:["R因子","Col因子","致育因子","Ti质粒"],a:2},
+    {c:"生态",q:"地衣是哪种关系的代表？",o:["互生","共生","寄生","拮抗"],a:1},
+    {c:"生态",q:"BOD₅表示？",o:["化学需氧量","五日生化需氧量","总有机碳","溶解氧"],a:1},
+    {c:"生态",q:"大肠菌群指示？",o:["总菌数","粪便污染","病毒污染","重金属污染"],a:1},
+  ],
+  latin: [
+    {g:"细菌",n:"大肠杆菌",l:"Escherichia coli",v:"red"},{g:"细菌",n:"金葡菌",l:"Staphylococcus aureus",v:"red"},{g:"细菌",n:"枯草杆菌",l:"Bacillus subtilis",v:"red"},
+    {g:"细菌",n:"链霉菌",l:"Streptomyces",v:"red"},{g:"细菌",n:"假单胞菌",l:"Pseudomonas",v:"red"},{g:"细菌",n:"根瘤菌",l:"Rhizobium",v:"red"},
+    {g:"细菌",n:"固氮菌",l:"Azotobacter",v:"red"},{g:"细菌",n:"沙门氏菌",l:"Salmonella",v:"red"},{g:"细菌",n:"弧菌",l:"Vibrio",v:"red"},
+    {g:"细菌",n:"梭菌",l:"Clostridium",v:"red"},{g:"细菌",n:"分枝杆菌",l:"Mycobacterium",v:"red"},{g:"细菌",n:"立克次氏体",l:"Rickettsia",v:"red"},
+    {g:"细菌",n:"乳杆菌",l:"Lactobacillus",v:"red"},{g:"细菌",n:"支原体",l:"Mycoplasma",v:"blue"},{g:"细菌",n:"衣原体",l:"Chlamydia",v:"blue"},
+    {g:"细菌",n:"鱼腥蓝细菌",l:"Anabaena",v:"blue"},{g:"古菌",n:"甲烷杆菌",l:"Methanobacterium",v:"red"},{g:"古菌",n:"盐杆菌",l:"Halobacterium",v:"red"},
+    {g:"真菌",n:"酿酒酵母",l:"Saccharomyces cerevisiae",v:"red"},{g:"真菌",n:"毛霉",l:"Mucor",v:"red"},{g:"真菌",n:"根霉",l:"Rhizopus",v:"red"},
+    {g:"真菌",n:"曲霉",l:"Aspergillus",v:"red"},{g:"真菌",n:"青霉",l:"Penicillium",v:"red"},{g:"真菌",n:"假丝酵母",l:"Candida",v:"red"},
+    {g:"病毒",n:"烟草花叶病毒",l:"Tobamovirus",v:"red"},{g:"病毒",n:"T4噬菌体",l:"T4-like viruses",v:"red"},{g:"病毒",n:"慢病毒(HIV)",l:"Lentivirus",v:"red"},
+  ]
 };
 
 // ===== STATE =====
-const state = {
-  page:'notes',fcMode:'term',fcIdx:0,fcItems:[],fcShuffled:[],fcAuto:null,
-  learned: JSON.parse(localStorage.getItem('micro_learned')||'[]'),
-  fontSize: parseInt(localStorage.getItem('micro_fs')||'14'),
-  dark: localStorage.getItem('micro_dark')==='true',
-  timer: 0, timerId: null
+const S = {
+  learned: JSON.parse(localStorage.getItem('ml')||'[]'),
+  dark: localStorage.getItem('md')==='true',
+  qAnswers: JSON.parse(localStorage.getItem('mq')||'{}'),
+  page: 'home'
 };
 
+// ===== HELPERS =====
+const $ = id => document.getElementById(id);
+const qs = (s,d)=> (d||document).querySelector(s);
+const qsa = (s,d)=> [...(d||document).querySelectorAll(s)];
+
 // ===== INIT =====
-function init(){
-  document.getElementById('termTotal').textContent=TERMINOLOGY.length;
-  renderLetterIndex(); renderTerms(); renderQA(); renderLatin();
-  showExam('A'); updateProgress(); renderNotes();
-  if(state.dark) document.body.classList.add('dark-mode');
-  document.querySelector('.notes-content').style.setProperty('--note-fs',state.fontSize+'px');
+function init() {
+  if(S.dark) document.body.classList.add('dark');
+  renderHome();
+  renderLetterTabs();
+  renderTerms();
+  renderQA();
+  renderLatin();
+  renderNotes();
+}
+init();
+
+// ===== DARK MODE =====
+function toggleDark() {
+  S.dark = !S.dark;
+  document.body.classList.toggle('dark');
+  localStorage.setItem('md', S.dark);
 }
 
 // ===== PAGE SWITCH =====
-function switchPage(p){
-  state.page=p;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===p));
-  document.querySelectorAll('.page').forEach(v=>v.classList.toggle('active',v.id==='page-'+p));
-  if(p==='flashcard') initFC();
-  if(p==='exam') startTimer();
-  else if(p!=='quiz') stopTimer();
-  if(p==='search') document.getElementById('globalSearch').focus();
+function switchPage(p) {
+  S.page = p;
+  qsa('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === p));
+  qsa('.page').forEach(v => v.classList.toggle('active', v.id === 'page-'+p));
   if(p==='quiz') renderQuiz();
+  if(p==='search') $('globalSearch').focus();
+  if(p==='home') renderHome();
 }
 
-// ===== FONT SIZE =====
-function changeFontSize(d){
-  state.fontSize=Math.max(12,Math.min(20,state.fontSize+d));
-  localStorage.setItem('micro_fs',state.fontSize);
-  document.querySelector('.notes-content').style.setProperty('--note-fs',state.fontSize+'px');
-  document.querySelectorAll('.notes-content p').forEach(p=>p.style.fontSize=state.fontSize+'px');
-}
-
-// ===== DARK MODE =====
-function toggleDark(){state.dark=!state.dark;document.body.classList.toggle('dark-mode');localStorage.setItem('micro_dark',state.dark);}
-
-// ===== TERMINOLOGY =====
-function renderLetterIndex(){
-  const l='ABCDEFGHJKLMNPQRSTWXYZ'.split('');
-  document.getElementById('letterIndex').innerHTML='<span class="active" onclick="filterByLetter(this,\'\')">全部</span>'+l.map(l=>`<span onclick="filterByLetter(this,'${l}')">${l}</span>`).join('');
-}
-function filterByLetter(el,l){
-  document.querySelectorAll('#letterIndex span').forEach(s=>s.classList.remove('active'));el.classList.add('active');
-  const items=l?TERMINOLOGY.filter(t=>t.letter===l):TERMINOLOGY;
-  renderTermList(items);
-}
-function renderTerms(){filterByLetter(document.querySelector('#letterIndex span'),'');}
-function renderTermList(items){
-  document.getElementById('termList').innerHTML=items.map((t,i)=>`<div class="term-card" onclick="toggleTerm(event,this)">
-    <span class="term-check" onclick="event.stopPropagation();toggleLearned('${t.name}')">${state.learned.includes(t.name)?'✅':'⬜'}</span>
-    <div><div class="term-name">${t.name}</div><div class="term-def">${t.def}</div></div>
+// ===== HOME =====
+function renderHome() {
+  const lt = DATA.terms.length, ll = S.learned.length, lq = Object.keys(S.qAnswers).length;
+  const lc = Object.keys(S.qAnswers).filter(k => {
+    const q = DATA.quiz.find(x=>x.q===k);
+    return q && S.qAnswers[k]===q.a;
+  }).length;
+  $('dashCards').innerHTML = [
+    {icon:'📝',label:'名词',count:`${ll}/${lt}`,pct:lt?Math.round(ll/lt*100):0},
+    {icon:'✏️',label:'刷题',count:`${lq}`,pct:lq?Math.round(lc/lq*100):0},
+    {icon:'📖',label:'笔记',count:'9章'}
+  ].map(c => `<div class="dash-card" onclick="switchPage('${c.label==='名词'?'terms':c.label==='刷题'?'quiz':'notes'}')">
+    <div class="icon">${c.icon}</div><div class="count">${c.count}</div>
+    <div class="label">${c.label}</div>
+    ${c.pct!==undefined?`<div class="dash-progress"><div class="fill" style="width:${c.pct}%"></div></div>`:''}
   </div>`).join('');
+  const total = lt + DATA.quiz.length;
+  const done = ll + lq;
+  $('dashProgress').textContent = `学习进度: ${done}/${total} (${total?Math.round(done/total*100):0}%)`;
 }
-function toggleTerm(e,el){if(e.target.classList.contains('term-check'))return;el.classList.toggle('expanded');}
-function toggleLearned(name){
-  const idx=state.learned.indexOf(name);
-  if(idx>-1) state.learned.splice(idx,1);else state.learned.push(name);
-  localStorage.setItem('micro_learned',JSON.stringify(state.learned));
-  renderTerms();updateProgress();
+
+// ===== TERMS =====
+function renderLetterTabs() {
+  const letters = [...new Set(DATA.terms.map(t=>t.l))].sort();
+  $('letterTabs').innerHTML = '<span class="active" onclick="filterLetter(this,\'\')">全部</span>' +
+    letters.map(l => `<span onclick="filterLetter(this,'${l}')">${l}</span>`).join('');
 }
-function filterTerms(){
-  const q=document.getElementById('termSearch').value.trim();
-  const items=q?TERMINOLOGY.filter(t=>t.name.includes(q)||t.def.includes(q)):TERMINOLOGY;
-  renderTermList(items);
-  if(!q)document.querySelectorAll('#letterIndex span').forEach(s=>s.classList.remove('active'));
+function filterLetter(el, l) {
+  qsa('#letterTabs span').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  renderTermList(l ? DATA.terms.filter(t=>t.l===l) : DATA.terms);
+}
+function renderTermList(items) {
+  $('termList').innerHTML = items.map(t => {
+    const learned = S.learned.includes(t.n);
+    return `<div class="term-item" onclick="toggleTerm(event,this)">
+      <span class="term-check" onclick="event.stopPropagation();toggleLearned('${t.n}')">${learned?'✅':'⬜'}</span>
+      <div><div class="term-name">${t.n}</div><div class="term-def">${t.d}</div></div>
+    </div>`;
+  }).join('');
+}
+function renderTerms() { filterLetter(qs('#letterTabs span'), ''); }
+function toggleTerm(e, el) { if(e.target.classList.contains('term-check'))return; el.classList.toggle('open'); }
+function toggleLearned(n) {
+  const i = S.learned.indexOf(n);
+  i>-1 ? S.learned.splice(i,1) : S.learned.push(n);
+  localStorage.setItem('ml', JSON.stringify(S.learned));
+  renderTerms(); renderHome();
+}
+function filterTerms() {
+  const q = $('termSearch').value.trim();
+  renderTermList(q ? DATA.terms.filter(t=>t.n.includes(q)||t.d.includes(q)) : DATA.terms);
 }
 
 // ===== Q&A =====
-function renderQA(){
-  const t=[...new Set(SHORT_QUESTIONS.map(q=>q.topic))];
-  document.getElementById('qaTopics').innerHTML='<button class="toggle-btn active" onclick="filterQAByTopic(this,\'\')">全部</button>'+t.map(t=>`<button class="toggle-btn" onclick="filterQAByTopic(this,'${t}')">${t}</button>`).join('');
-  renderQAList(SHORT_QUESTIONS);
+function renderQA() {
+  const topics = [...new Set(DATA.qa.map(q=>q.t))];
+  $('qaTopics').innerHTML = '<span class="tag tag-blue" style="cursor:pointer" onclick="filterQATopic(this,\'\')">全部</span>' +
+    topics.map(t => `<span class="tag tag-green" style="cursor:pointer" onclick="filterQATopic(this,'${t}')">${t}</span>`).join('');
+  renderQAList(DATA.qa);
 }
-function filterQAByTopic(el,t){
-  document.querySelectorAll('#qaTopics .toggle-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');
-  renderQAList(t?SHORT_QUESTIONS.filter(q=>q.topic===t):SHORT_QUESTIONS);
+function filterQATopic(el, t) {
+  renderQAList(t ? DATA.qa.filter(q=>q.t===t) : DATA.qa);
 }
-function renderQAList(items){
-  document.getElementById('qaList').innerHTML=items.map((q,i)=>`<div class="card qa-item"><div class="qa-q" onclick="this.parentElement.classList.toggle('open')">${i+1}. ${q.q}</div><div class="qa-a">${q.a}</div></div>`).join('');
+function renderQAList(items) {
+  $('qaList').innerHTML = items.map((q,i) => `<div class="card qa-item">
+    <div class="qa-q" onclick="this.parentElement.classList.toggle('open')">${i+1}. ${q.q}</div>
+    <div class="qa-a">${q.a}</div>
+  </div>`).join('');
 }
-function filterQA(){
-  const q=document.getElementById('qaSearch').value.trim();
-  renderQAList(q?SHORT_QUESTIONS.filter(s=>s.q.includes(q)||s.a.includes(q)||s.topic.includes(q)):SHORT_QUESTIONS);
+function filterQA() {
+  const q = $('qaSearch').value.trim();
+  renderQAList(q ? DATA.qa.filter(s=>s.q.includes(q)||s.a.includes(q)||s.t.includes(q)) : DATA.qa);
 }
-function randomQA(){
-  const q=SHORT_QUESTIONS[Math.floor(Math.random()*SHORT_QUESTIONS.length)];
-  const el=document.getElementById('qaRandom');
-  el.style.display='block';
-  el.innerHTML=`<div class="card"><div class="qa-q" style="cursor:default;font-size:15px">❓ ${q.q}</div><button class="exam-show-btn" onclick="this.nextElementSibling.style.display='block';this.style.display='none'">📖 显示答案</button><div class="qa-a" style="display:none">${q.a}</div></div>`;
-}
-
-// ===== FLASHCARD =====
-function setFCMode(m){
-  state.fcMode=m;
-  document.querySelectorAll('#fcMode .toggle-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
-  initFC();
-}
-function initFC(){
-  state.fcItems=state.fcMode==='term'?TERMINOLOGY.map(t=>({front:t.name,back:t.def})):LATIN_NAMES.map(l=>({front:l.name,back:l.latin}));
-  state.fcIdx=0;state.fcShuffled=[...state.fcItems];showFC();
-}
-function showFC(){
-  document.getElementById('flashcard').classList.remove('flipped');
-  const items=state.fcShuffled;if(!items.length)return;
-  const item=items[state.fcIdx];
-  document.getElementById('fcFrontLabel').textContent=state.fcMode==='term'?'名词':'中文名';
-  document.getElementById('fcFront').textContent=item.front;
-  document.getElementById('fcBackLabel').textContent=state.fcMode==='term'?'释义':'拉丁学名';
-  document.getElementById('fcBack').textContent=item.back;
-  document.getElementById('fcHint').textContent='点击翻转';
-  document.getElementById('fcCounter').textContent=`${state.fcIdx+1}/${items.length}`;
-  document.getElementById('fcProgressFill').style.width=`${((state.fcIdx+1)/items.length*100)}%`;
-}
-function nextCard(){if(state.fcIdx<state.fcShuffled.length-1){state.fcIdx++;showFC();}else if(state.fcAuto){state.fcIdx=0;showFC();}}
-function prevCard(){if(state.fcIdx>0){state.fcIdx--;showFC();}}
-function shuffleCards(){state.fcShuffled=[...state.fcItems].sort(()=>Math.random()-0.5);state.fcIdx=0;showFC();}
-function toggleAutoPlay(){
-  if(state.fcAuto){clearInterval(state.fcAuto);state.fcAuto=null;document.getElementById('fcAutoBtn').textContent='▶ 自动';document.getElementById('fcAutoBtn').classList.remove('active');}
-  else{state.fcAuto=setInterval(()=>{nextCard();},3000);document.getElementById('fcAutoBtn').textContent='⏸ 暂停';document.getElementById('fcAutoBtn').classList.add('active');}
-}
-
-// ===== LATIN =====
-function renderLatin(){
-  const g=[...new Set(LATIN_NAMES.map(l=>l.group))];
-  document.getElementById('latinGroups').innerHTML='<button class="toggle-btn active" onclick="filterLatinByGroup(this,\'\')">全部</button>'+g.map(g=>`<button class="toggle-btn" onclick="filterLatinByGroup(this,'${g}')">${g}</button>`).join('');
-  renderLatinList(LATIN_NAMES);
-}
-function filterLatinByGroup(el,g){
-  document.querySelectorAll('#latinGroups .toggle-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');
-  renderLatinList(g?LATIN_NAMES.filter(l=>l.group===g):LATIN_NAMES);
-}
-function renderLatinList(items){
-  document.getElementById('latinList').innerHTML=items.map(l=>`<div class="latin-item"><span class="cn">${l.name}</span><span><span class="la">${l.latin}</span><span class="level ${l.level}">${l.level==='red'?'需掌握':'识别'}</span></span></div>`).join('');
-}
-function filterLatin(){
-  const q=document.getElementById('latinSearch').value.trim().toLowerCase();
-  renderLatinList(q?LATIN_NAMES.filter(l=>l.name.includes(q)||l.latin.toLowerCase().includes(q)):LATIN_NAMES);
-}
-
-// ===== EXAM =====
-function showExam(w){
-  state.currentExam=w;
-  document.querySelectorAll('#examToggle .toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===['A','B','C'].indexOf(w)));
-  const ex=EXAM_PAPERS[w];
-  let html=`<h2 style="color:var(--primary);font-size:16px;margin-bottom:8px">${ex.name}</h2>`;
-  ex.sections.forEach(sec=>{
-    html+=`<div class="exam-section-title">${sec.title}</div>`;
-    sec.items.forEach((item,i)=>{
-      html+=`<div class="exam-question"><div class="exam-q-text">${item.q}</div>`;
-      if(sec.type==='choice'&&item.opts){
-        html+=`<div class="exam-options" id="examOpts_${w}_${i}">`;
-        item.opts.forEach((o,j)=>{
-          const correct=o===item.a||item.a.startsWith(o[0]);
-          html+=`<div class="exam-opt" onclick="pickChoice(this,'${correct}')">${o}</div>`;
-        });
-        html+=`</div>`;
-      }
-      if(sec.type==='tf'){
-        html+=`<div style="display:flex;gap:8px;margin:4px 0"><span class="exam-opt" onclick="pickChoice(this,'${item.a[0]==='√'}')">✅ 正确</span><span class="exam-opt" onclick="pickChoice(this,'${item.a[0]!=='√'}')">❌ 错误</span></div>`;
-      }
-      html+=`<button class="exam-show-btn" onclick="toggleAns(this)">📖 答案</button><div class="exam-answer">${item.a}</div></div>`;
-    });
-  });
-  document.getElementById('examContent').innerHTML=html;
-  resetTimer();
-}
-function toggleAns(btn){const a=btn.nextElementSibling;if(a.style.display==='block'){a.style.display='none';btn.textContent='📖 答案'}else{a.style.display='block';btn.textContent='📖 隐藏'}}
-function pickChoice(el,correct){
-  if(el.classList.contains('disabled'))return;
-  el.classList.add(correct==='true'?'correct':'wrong','disabled');
-  el.parentElement.querySelectorAll('.exam-opt').forEach(o=>o.classList.add('disabled'));
-  if(correct!=='true')el.parentElement.querySelector('.exam-opt.correct')||[...el.parentElement.children].find(c=>c.classList.contains('disabled')&&correct!=='true'&&!c.classList.contains('wrong'));
-}
-function startTimer(){if(state.timerId)return;state.timerId=setInterval(()=>{state.timer++;const m=String(Math.floor(state.timer/60)).padStart(2,'0');const s=String(state.timer%60).padStart(2,'0');document.getElementById('examTimer').textContent=`⏱ ${m}:${s}`;},1000);}
-function stopTimer(){if(state.timerId){clearInterval(state.timerId);state.timerId=null;}}
-function resetTimer(){state.timer=0;document.getElementById('examTimer').textContent='⏱ 00:00';}
-
-// ===== SEARCH =====
-function globalSearch(){
-  const q=document.getElementById('globalSearch').value.trim().toLowerCase();
-  const el=document.getElementById('searchResults');
-  if(!q){el.innerHTML='<div class="empty-state"><div class="icon">🔍</div>输入关键词搜索</div>';return;}
-  let r=[];
-  TERMINOLOGY.forEach(t=>{if(t.name.includes(q)||t.def.includes(q))r.push({title:t.name,snippet:t.def,source:'名词解释',page:'terminology'})});
-  SHORT_QUESTIONS.forEach(s=>{if(s.q.includes(q)||s.a.includes(q))r.push({title:s.q.slice(0,40)+'...',snippet:s.a.slice(0,100),source:'简答题',page:'qa'})});
-  LATIN_NAMES.forEach(l=>{if(l.name.includes(q)||l.latin.toLowerCase().includes(q))r.push({title:l.name,snippet:l.latin,source:'拉丁学名',page:'latin'})});
-  if(r.length>50)r=r.slice(0,50);
-  if(!r.length){el.innerHTML='<div class="empty-state"><div class="icon">😕</div>未找到结果</div>';return;}
-  el.innerHTML=r.map(r=>`<div class="search-result" onclick="switchPage('${r.page}')"><div class="sr-source">${r.source}</div><div class="sr-title">${r.title.replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')}</div><div class="sr-snippet">${r.snippet.slice(0,120).replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')}</div></div>`).join('');
-}
-
-// ===== CHAPTER NAV + NOTES =====
-function renderNotes(){
-  const html=`<div id="notesBody">
-<h2>周德庆《微生物学教程》笔记</h2>
-<p style="color:var(--text-light);font-size:13px">基于笔记+复习资料整理 · 覆盖全部8章</p>
-
-<h3 id="ch1">第一章 微生物学概述</h3>
-<p><b>微生物</b>：形体微小、结构简单的低等生物的通称。</p>
-<p><b>五界系统</b>（Whittaker, 1969）：原核生物界、原生生物界、真菌界、动物界、植物界。</p>
-<p><b>三域系统</b>（Woese）：细菌(Bacteria)、古生菌(Archaea)、真核生物(Eukarya)。</p>
-<p><b>五大共性</b>：①体积小面积大 ②吸收快转化快 ③生长旺繁殖快 ④适应强易变异 ⑤分布广种类多</p>
-<p><b>主要贡献</b>：列文虎克（首次发现微生物）、巴斯德（否定自然发生说、消毒法、疫苗）、科赫（纯培养技术、柯赫准则）、贝耶林克（固氮菌）、维诺格拉德斯基（化能自养）</p>
-<p><b>柯赫准则</b>：①病原伴随病害存在 ②能分离纯培养 ③接种纯培养诱发原病害 ④重新分离同种病原</p>
-<p><b>分类方法</b>：双名法（属名+种名+命名人）。分类单位：界门纲目科属种。分类方法：经典法、数值法、分子法（GC含量、核酸杂交、16S rRNA）。</p>
-
-<h3 id="ch2">第二章 原核微生物</h3>
-<h4>细菌</h4>
-<p><b>形态</b>：球菌、杆菌、螺旋菌（弧菌/螺旋菌）。大小：0.5-1μm。</p>
-<p><b>基本结构</b>：细胞壁、细胞膜、间体、核区、核糖体(70S)、细胞质。</p>
-<p><b>特殊结构</b>：荚膜（保护/贮存）、鞭毛（运动）、芽孢（抗逆休眠体）、菌毛（附着）。</p>
-
-<p><b>G⁺ vs G⁻ 细胞壁</b></p>
-<table><tr><th>特征</th><th>G⁺菌</th><th>G⁻菌</th></tr>
-<tr><td>厚度</td><td>30-40nm</td><td>8-10nm</td></tr>
-<tr><td>肽聚糖含量</td><td>40-90%</td><td>5-10%</td></tr>
-<tr><td>磷壁酸</td><td>有</td><td>无</td></tr>
-<tr><td>脂多糖(LPS)</td><td>无</td><td>有（内毒素）</td></tr>
-<tr><td>对青霉素</td><td>敏感</td><td>不敏感</td></tr></table>
-
-<p><b>肽聚糖单体</b>：双糖单位（NAG-NAM）+ 短肽尾（L-Ala-D-Glu-L-Lys/L-DAP-D-Ala）+ 肽桥（G⁺为5Gly）。</p>
-<p><b>革兰氏染色</b>：结晶紫→碘液→酒精脱色→番红复染。G⁺保留紫色，G⁻呈红色。</p>
-<p><b>芽孢结构</b>：核心→核心壁→皮层→芽孢衣→孢外壁。含DPA-Ca，含水量低，抗逆性极强。</p>
-
-<h4>放线菌</h4>
-<p>丝状分枝细菌，产抗生素。菌丝分基内菌丝、气生菌丝、孢子丝。代表属：链霉菌（产90%抗生素）、小单孢菌、诺卡氏菌。</p>
-
-<h4>其他原核微生物</h4>
-<table><tr><th>类别</th><th>特点</th></tr>
-<tr><td>立克次氏体</td><td>G⁻，专性活细胞内寄生，大小介于细菌和病毒之间</td></tr>
-<tr><td>支原体</td><td>无细胞壁，膜含甾醇，最小细胞（0.2-0.25μm）</td></tr>
-<tr><td>衣原体</td><td>G⁻，专性活细胞内寄生，"能量寄生物"</td></tr>
-<tr><td>蓝细菌</td><td>含叶绿素a，放氧光合作用，原核"先锋生物"</td></tr>
-<tr><td>蛭弧菌</td><td>寄生其他细菌导致裂解，G⁻，生物防治</td></tr></table>
-
-<h3 id="ch3">第三章 真核微生物</h3>
-<h4>酵母菌</h4>
-<p>单细胞真菌，出芽繁殖。细胞壁含甘露聚糖。有性繁殖产生子囊孢子。</p>
-<p><b>生活史类型</b>：①单倍体型（八孢裂殖酵母）②双倍体型（路德类酵母）③世代交替型（酿酒酵母）</p>
-<p><b>菌落</b>：与细菌相似但大而厚，乳白色或红色，有酒香味。</p>
-
-<h4>霉菌</h4>
-<p>丝状真菌。菌丝分无隔（低等真菌：根霉、毛霉）和有隔（高等真菌：青霉、曲霉）。</p>
-<p><b>无性孢子</b>：孢囊孢子、分生孢子、节孢子、厚垣孢子、游动孢子。</p>
-<p><b>有性孢子</b>：卵孢子（壶菌门）、接合孢子（接合菌门）、子囊孢子（子囊菌门）、担孢子（担子菌门）。</p>
-
-<h4>四类微生物菌落比较</h4>
-<table><tr><th>特征</th><th>细菌</th><th>放线菌</th><th>酵母菌</th><th>霉菌</th></tr>
-<tr><td>含水状态</td><td>湿润</td><td>干燥</td><td>较湿润</td><td>干燥</td></tr>
-<tr><td>透明度</td><td>透明/稍透明</td><td>不透明</td><td>稍透明</td><td>不透明</td></tr>
-<tr><td>颜色</td><td>多样</td><td>乳脂色/少数色</td><td>单调</td><td>多样</td></tr>
-<tr><td>与培养基结合</td><td>不结合</td><td>牢固</td><td>不结合</td><td>较牢固</td></tr></table>
-
-<h3 id="ch4">第四章 病毒</h3>
-<p><b>特点</b>：①超显微(10-300nm) ②无细胞结构，一种核酸 ③专性活细胞内寄生 ④对抗生素不敏感，对干扰素敏感</p>
-<p><b>病毒粒子结构</b>：核心（核酸）+ 衣壳（蛋白质）= 核衣壳 ± 包膜（脂蛋白）。对称体制：螺旋（TMV）、二十面体（腺病毒）、复合（T4噬菌体）。</p>
-<p><b>T4噬菌体</b>：头部（二十面体，含dsDNA）+ 颈部 + 尾部（尾鞘/尾髓/尾丝/基板）。</p>
-<p><b>繁殖周期</b>：吸附→侵入（注射DNA）→增殖（早/中/晚期转录）→装配→裂解释放。潜伏期→裂解期→稳定期。</p>
-<p><b>一步生长曲线</b>：定量描述烈性噬菌体增殖规律。裂解量=每个被感染细胞释放的新噬菌体平均数。</p>
-<p><b>温和噬菌体 vs 烈性噬菌体</b>：烈性→裂解细胞；温和→DNA整合（前噬菌体）→溶源性→随宿主同步复制。</p>
-<p><b>亚病毒</b>：类病毒（仅RNA）、拟病毒、朊病毒（仅蛋白质，无核酸）。</p>
-
-<h3 id="ch5">第五章 微生物营养</h3>
-<p><b>六大营养物</b>：碳源、氮源、能源、生长因子、无机盐、水。</p>
-<p><b>四种营养类型</b>：</p>
-<table><tr><th>类型</th><th>能源</th><th>碳源</th><th>电子供体</th><th>举例</th></tr>
-<tr><td>光能自养</td><td>光能</td><td>CO₂</td><td>H₂O/H₂S</td><td>蓝细菌、藻类</td></tr>
-<tr><td>光能异养</td><td>光能</td><td>有机物/CO₂</td><td>简单有机物</td><td>红螺菌</td></tr>
-<tr><td>化能自养</td><td>无机氧化</td><td>CO₂</td><td>H₂/H₂S/Fe²⁺</td><td>硝化细菌、硫化细菌</td></tr>
-<tr><td>化能异养</td><td>有机物</td><td>有机物</td><td>有机物</td><td>大多数细菌、真菌</td></tr></table>
-
-<p><b>四种运输方式</b>：①单纯扩散（不耗能，顺梯度）②促进扩散（载体，顺梯度）③主动运输（载体，逆梯度，耗能）④基团转位（PTS系统，磷酸化）。</p>
-<p><b>培养基原则</b>：目的明确、营养协调（C/N=100/0.5-2）、条件适宜（pH/渗透压/aw/Eh）、经济节约。</p>
-
-<h3 id="ch6">第六章 微生物代谢</h3>
-<p><b>产能途径</b>：</p>
-<table><tr><th>途径</th><th>产物</th><th>ATP</th><th>特点</th></tr>
-<tr><td>EMP</td><td>丙酮酸+NADH₂</td><td>2</td><td>普遍存在</td></tr>
-<tr><td>HMP</td><td>NADPH₂+磷酸糖</td><td>1</td><td>提供碳架和还原力</td></tr>
-<tr><td>ED</td><td>丙酮酸+GAP</td><td>1</td><td>微生物特有，细菌酒精发酵</td></tr>
-<tr><td>TCA</td><td>CO₂+H₂O+大量ATP</td><td>24</td><td>代谢枢纽</td></tr></table>
-
-<p><b>生物氧化三种类型</b>：</p>
-<ul>
-<li><b>发酵</b>：无氧，底物水平磷酸化，有机物为最终氢受体，产2ATP</li>
-<li><b>有氧呼吸</b>：有氧，氧化磷酸化，O₂为最终氢受体，产38ATP</li>
-<li><b>无氧呼吸</b>：无氧，氧化磷酸化，NO₃⁻/SO₄²⁻/CO₂为最终受体，产少量ATP</li>
-</ul>
-<p><b>无氧呼吸电子受体</b>：反硝化→NO₃⁻；硫酸盐还原→SO₄²⁻；产甲烷→CO₂；延胡索酸还原→延胡索酸。</p>
-
-<p><b>发酵类型</b>：</p>
-<table><tr><th>类型</th><th>产物</th><th>微生物</th></tr>
-<tr><td>乙醇发酵</td><td>乙醇+CO₂</td><td>酵母菌</td></tr>
-<tr><td>同型乳酸发酵</td><td>乳酸</td><td>乳杆菌</td></tr>
-<tr><td>异型乳酸发酵</td><td>乳酸+乙醇+CO₂</td><td>明串珠菌</td></tr>
-<tr><td>丁酸发酵</td><td>丁酸/丁醇/丙酮</td><td>梭菌</td></tr>
-<tr><td>混合酸发酵</td><td>乳酸+乙醇+乙酸+CO₂+H₂</td><td>大肠杆菌</td></tr></table>
-
-<p><b>生物固氮</b>：N₂ + 8[H] + 18~24ATP → 2NH₃ + H₂ + 18~24ADP + 18~24Pi。需固氮酶（MoFe蛋白+Fe蛋白）、ATP、还原力、严格厌氧。</p>
-<p><b>肽聚糖合成三阶段</b>：①细胞质（Park核苷酸）②细胞膜（与细菌萜醇结合→双糖肽亚单位）③细胞膜外（转糖基→转肽交联）。青霉素抑制转肽酶。</p>
-<p><b>巴斯德效应</b>：酵母菌酒精发酵时通入氧气，发酵减慢，停止产乙醇，葡萄糖消耗速率下降。</p>
-
-<h3 id="ch7">第七章 微生物生长</h3>
-<p><b>生长曲线四阶段</b>：</p>
-<table><tr><th>时期</th><th>菌数</th><th>特点</th><th>应用</th></tr>
-<tr><td>延滞期</td><td>几乎不变</td><td>代谢活跃，体积增大</td><td>尽量缩短</td></tr>
-<tr><td>对数期</td><td>几何级数增</td><td>代时稳定，代谢最强</td><td>研究/接种材料</td></tr>
-<tr><td>稳定期</td><td>动态平衡</td><td>菌量最大，积累次生代谢物</td><td>收获菌体/产物</td></tr>
-<tr><td>衰亡期</td><td>指数下降</td><td>细胞自溶，畸形</td><td>及时放罐</td></tr></table>
-
-<p><b>连续培养</b>：恒浊法（收获菌体）、恒化法（科研，限制性因子）。</p>
-<p><b>同步生长</b>：机械法（离心/过滤/膜法）、诱导法（温度/营养调整）、抑制DNA合成法。</p>
-<p><b>环境因素</b>：温度（嗜冷<20℃/嗜温20-45℃/嗜热>45℃）、pH（细菌6.5-7.5/放线菌7.5-8/霉菌5-6）、氧气（好氧/厌氧/兼性/微好氧）、辐射、渗透压。</p>
-
-<p><b>微生物与氧的关系</b>：</p>
-<table><tr><th>类型</th><th>特点</th><th>举例</th></tr>
-<tr><td>专性好氧</td><td>必须有氧</td><td>固氮菌属</td></tr>
-<tr><td>兼性厌氧</td><td>有氧无氧均可</td><td>酿酒酵母、大肠杆菌</td></tr>
-<tr><td>微好氧</td><td>低氧浓度</td><td>霍乱弧菌</td></tr>
-<tr><td>耐氧</td><td>有氧无氧都发酵</td><td>乳酸乳杆菌</td></tr>
-<tr><td>专性厌氧</td><td>严格无氧</td><td>梭菌属、产甲烷菌</td></tr></table>
-
-<p><b>灭菌与消毒</b>：灭菌（杀灭所有微生物）、消毒（杀灭病原体）、防腐（抑制生长）、化疗（选择性毒力）。</p>
-<p><b>抗生素作用位点</b>：抑制细胞壁合成（青霉素）、影响细胞膜（多烯类）、干扰蛋白合成（链霉素）、阻碍核酸合成（利福平）。</p>
-
-<h3 id="ch8">第八章 微生物遗传</h3>
-<p><b>DNA是遗传物质的证明</b>：Griffith-Avery转化实验(1928-1944)、Hershey-Chase噬菌体实验(1952)、Fraenkel-Conrat病毒重建实验(1956)。</p>
-<p><b>质粒</b>：染色体外自主复制的小型闭合环状DNA。F因子（致育因子）、R因子（耐药性）、Col因子（大肠杆菌素）、Ti质粒（诱癌）、降解质粒。</p>
-<p><b>基因突变特点</b>：不对应性、自发性、稀有性、独立性、诱变性、稳定性、可逆性。</p>
-<p><b>自发性证明</b>：变量试验(Luria-Delbrück)、涂布试验(Newcombe)、影印培养试验(Lederberg)。</p>
-<p><b>DNA损伤修复</b>：光复活（可见光）、切除修复（暗修复，不产生突变）、重组修复（复制后，不产生突变）、SOS修复（易误修复，产生突变）。</p>
-<p><b>原核基因重组</b>：转化（游离DNA）、转导（噬菌体媒介）、接合（性菌毛，F⁺/F⁻/Hfr/F'）、原生质体融合。</p>
-<p><b>F因子四种菌株</b>：F⁺（有质粒，雄性）、F⁻（无质粒，雌性）、Hfr（F整合到染色体，高频重组）、F'（携带染色体基因的F因子）。</p>
-<p><b>准性生殖</b>：菌丝联结→质配→异核体→核配→体细胞交换和单倍体化。区别于有性生殖：无减数分裂。</p>
-<p><b>菌种保藏</b>：低温、干燥、隔绝空气、冷冻干燥（最常用）。我国机构：CCCCM（中科院微生物所等）。</p>
-
-<h3 id="ch9">第九章 微生物生态</h3>
-<p><b>微生物间关系</b>：互生（双方有利，如根际微生物）、共生（紧密结合，如地衣=藻+真菌）、寄生（病原体）、拮抗（抗生素）、捕食（原生动物吞细菌）。</p>
-
-<p><b>碳循环</b>：光合作用固定CO₂→有机物→微生物分解→CO₂回归大气。90%的CO₂由微生物代谢产生。</p>
-<p><b>氮循环</b>：固氮(N₂→NH₃)→氨化(有机N→NH₃)→硝化(NH₃→NO₃⁻)→反硝化(NO₃⁻→N₂)。</p>
-
-<table><tr><th>过程</th><th>反应</th><th>微生物</th></tr>
-<tr><td>固氮</td><td>N₂→NH₃</td><td>固氮菌、根瘤菌</td></tr>
-<tr><td>氨化</td><td>有机N→NH₃</td><td>腐败微生物</td></tr>
-<tr><td>硝化</td><td>NH₃→NO₂⁻→NO₃⁻</td><td>亚硝化菌→硝化菌</td></tr>
-<tr><td>反硝化</td><td>NO₃⁻→NO₂⁻→N₂</td><td>反硝化细菌</td></tr>
-<tr><td>硫化</td><td>H₂S→S→SO₄²⁻</td><td>硫化细菌</td></tr>
-<tr><td>反硫化</td><td>SO₄²⁻→H₂S</td><td>反硫化细菌</td></tr></table>
-
-<p><b>废水处理</b>：活性污泥法（好氧，絮凝团）、生物膜法（滴滤池）、沼气发酵（厌氧产甲烷）。</p>
-<p><b>水质指标</b>：BOD₅（五日生化需氧量）、COD（化学需氧量）。饮用水标准：细菌<100个/mL，大肠杆菌<3个/L。</p>
-<p><b>生物修复</b>：利用微生物降解环境污染物。如假单胞菌降解芳香烃、汞甲基化/还原。</p>
-</div>`;
-  document.getElementById('notesContent').innerHTML=html;
-  // Build chapter nav
-  const chapters=[
-    {id:'ch1',label:'绪论'},{id:'ch2',label:'原核微生物'},{id:'ch3',label:'真核微生物'},
-    {id:'ch4',label:'病毒'},{id:'ch5',label:'营养'},{id:'ch6',label:'代谢'},
-    {id:'ch7',label:'生长'},{id:'ch8',label:'遗传'},{id:'ch9',label:'生态'}
-  ];
-  document.getElementById('chapterNav').innerHTML=chapters.map(c=>`<button onclick="document.getElementById('${c.id}').scrollIntoView({behavior:'smooth'})">${c.label}</button>`).join('');
-}
-function filterNotes(){
-  const q=document.getElementById('notesSearch').value.trim().toLowerCase();
-  if(!q){renderNotes();return;}
-  const el=document.getElementById('notesContent');
-  const lines=el.innerText.split('\n').filter(l=>l.toLowerCase().includes(q));
-  if(!lines.length){el.innerHTML='<div class="empty-state">未找到</div>';return;}
-  el.innerHTML=lines.map(l=>'<p>'+l.replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')+'</p>').join('');
-}
-
-// ===== PROGRESS =====
-function updateProgress(){
-  const total=TERMINOLOGY.length,learned=state.learned.length,pct=total?Math.round(learned/total*100):0;
-  document.getElementById('termProgress').style.width=pct+'%';
-  document.getElementById('termCount').textContent=learned;
-  document.getElementById('progressSummary').textContent=`📊 ${pct}%`;
+function randomQA() {
+  const q = DATA.qa[Math.floor(Math.random()*DATA.qa.length)];
+  switchPage('qa');
+  renderQAList([q]);
 }
 
 // ===== QUIZ =====
-let quizMode = false;
-let quizAnswers = JSON.parse(localStorage.getItem('micro_quiz')||'{}');
-
-function renderQuiz(){
-  const ch = document.getElementById('quizChapter').value;
-  const count = parseInt(document.getElementById('quizCount').value);
-  let pool = ch ? QUESTIONS.filter(q=>q.chapter===ch) : [...QUESTIONS];
-  document.getElementById('quizPoolInfo').textContent = `题库共 ${QUESTIONS.length} 题${ch?'（已筛选 '+pool.length+' 题）':''}`;
+function renderQuiz() {
+  const ch = $('quizChapter').value, ct = parseInt($('quizCount').value);
+  let pool = ch ? DATA.quiz.filter(q=>q.c===ch) : [...DATA.quiz];
   let selected = [...pool];
-  if(count>0 && selected.length>count) selected.sort(()=>Math.random()-0.5).splice(count);
-  if(quizMode) renderQuizMode(selected);
-  else renderQuizBrowse(selected);
-}
-
-function renderQuizBrowse(items){
-  const el = document.getElementById('quizList');
-  document.getElementById('quizProgressWrap').style.display='none';
-  const stats = getQuizStats();
-  let totalQ=Object.keys(stats).length, correctQ=Object.values(stats).filter(v=>v).length;
-  document.getElementById('quizStats').innerHTML = `<span class="quiz-stat">📊 已答 <b>${totalQ}</b> 题 · 正确 <b style="color:var(--success)">${correctQ}</b> 题 · 正确率 <b>${totalQ?Math.round(correctQ/totalQ*100):0}%</b></span>`;
-  el.innerHTML = items.map((q,i)=>renderQuizCard(q,i)).join('');
-}
-
-function renderQuizMode(items){
-  const el = document.getElementById('quizList');
-  if(!items.length){el.innerHTML='<div class="empty-state"><div class="icon">📝</div>无题目</div>';return;}
-  const total = items.length;
-  const done = items.filter(q=>quizAnswers[q.q]!==undefined).length;
-  document.getElementById('quizProgressWrap').style.display='block';
-  document.getElementById('quizProgressFill').style.width = `${total?Math.round(done/total*100):0}%`;
-  document.getElementById('quizStats').innerHTML = `<span class="quiz-stat">📊 进度 <b>${done}/${total}</b> · 正确率 <b>${total?Math.round(done/total*100):0}%</b></span>`;
-  el.innerHTML = items.map((q,i)=>renderQuizCard(q,i)).join('');
-  // scroll to first unanswered
-  const first = el.querySelector('.quiz-card:not(.correct):not(.wrong)');
-  if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-function renderQuizCard(q,i){
-  const userAns = quizAnswers[q.q];
-  const isCorrect = userAns===q.answer;
-  const answered = userAns!==undefined;
-  let cls = 'card quiz-card';
-  if(answered) cls += isCorrect ? ' correct' : ' wrong';
-  const optsHtml = q.opts.map((o,j)=>{
-    let optCls = 'quiz-opt';
-    if(answered){
-      if(j===q.answer) optCls += ' show-correct';
-      if(j===userAns && j!==q.answer) optCls += ' selected-wrong';
-      if(j===userAns && j===q.answer) optCls += ' selected-correct';
-      optCls += ' disabled';
-    }
-    return `<div class="${optCls}" onclick="${answered?'':'checkQuiz(this,'+i+','+q.answer+')'}">${String.fromCharCode(65+j)}. ${o}</div>`;
+  if(ct>0 && selected.length>ct) selected.sort(()=>Math.random()-0.5).splice(ct);
+  const total = Object.keys(S.qAnswers).length;
+  const correct = Object.keys(S.qAnswers).filter(k=>{const q=DATA.quiz.find(x=>x.q===k);return q&&S.qAnswers[k]===q.a}).length;
+  $('quizStats').innerHTML = `已答 ${total} 题 · 正确 ${correct} 题 · 正确率 ${total?Math.round(correct/total*100):0}%`;
+  $('quizList').innerHTML = selected.map((q,i) => {
+    const ua = S.qAnswers[q.q], ans = ua!==undefined, isC = ua===q.a;
+    const opts = q.o.map((o,j) => {
+      let cls = 'quiz-opt';
+      if(ans) {
+        if(j===q.a) cls+=' show-correct';
+        if(j===ua&&j!==q.a) cls+=' selected-wrong';
+        if(j===ua&&j===q.a) cls+=' selected-correct';
+        cls+=' disabled';
+      }
+      return `<div class="${cls}" ${ans?'':`onclick="checkQuiz(this,'${q.q}',${j},${q.a})"`}>${'ABCD'[j]}. ${o}</div>`;
+    }).join('');
+    return `<div class="card" style="${ans?`border-left:3px solid ${isC?'var(--success)':'var(--danger)'}`:''}">
+      <div class="quiz-chapter">${q.c}</div>
+      <div style="font-weight:600;font-size:14px;margin-bottom:8px">${q.q}</div>
+      ${opts}
+    </div>`;
   }).join('');
-  return `<div class="${cls}">
-    <div class="quiz-q-chapter">📌 ${q.chapter}</div>
-    <div class="quiz-q-num">第 ${i+1} 题</div>
-    <div class="quiz-q-text">${q.q}</div>
-    ${optsHtml}
-    <div class="quiz-explain ${answered?'show':''}">💡 ${q.explain}</div>
-  </div>`;
 }
-
-function checkQuiz(el,i,correctIdx){
-  const card = el.closest('.quiz-card');
-  const opts = card.querySelectorAll('.quiz-opt');
-  const selectedIdx = [...opts].indexOf(el);
-  const correct = selectedIdx===correctIdx;
-  // disable all
-  opts.forEach(o=>o.classList.add('disabled'));
-  // mark selected
-  el.classList.add(correct?'selected-correct':'selected-wrong');
-  // show correct
-  opts[correctIdx].classList.add('show-correct');
-  // show explanation
-  card.querySelector('.quiz-explain').classList.add('show');
-  // mark card
-  card.classList.add(correct?'correct':'wrong');
-  // save
-  const qText = card.querySelector('.quiz-q-text').textContent;
-  quizAnswers[qText] = selectedIdx;
-  localStorage.setItem('micro_quiz',JSON.stringify(quizAnswers));
-  // update stats
-  updateQuizStats();
-}
-
-function getQuizStats(){
-  const stats = {};
-  Object.keys(quizAnswers).forEach(q=>{
-    const question = QUESTIONS.find(x=>x.q===q);
-    if(question) stats[q] = quizAnswers[q]===question.answer;
-  });
-  return stats;
-}
-
-function updateQuizStats(){
-  const stats = getQuizStats();
-  const total = Object.keys(stats).length;
-  const correct = Object.values(stats).filter(v=>v).length;
-  document.getElementById('quizStats').innerHTML = `<span class="quiz-stat">📊 已答 <b>${total}</b> 题 · 正确 <b style="color:var(--success)">${correct}</b> 题 · 正确率 <b>${total?Math.round(correct/total*100):0}%</b></span>`;
-  if(quizMode){
-    const items = document.querySelectorAll('#quizList .quiz-card');
-    const done = [...items].filter(c=>c.classList.contains('correct')||c.classList.contains('wrong')).length;
-    document.getElementById('quizProgressFill').style.width = `${items.length?Math.round(done/items.length*100):0}%`;
-  }
-}
-
-function toggleQuizMode(){
-  quizMode = !quizMode;
-  document.getElementById('quizModeBtn').textContent = quizMode ? '📖 浏览模式' : '🎯 答题模式';
-  document.getElementById('quizModeBtn').style.background = quizMode ? '#27ae60' : '#e67e22';
+function checkQuiz(el, qText, selIdx, correctIdx) {
+  const card = el.closest('.card');
+  qsa('.quiz-opt', card).forEach(o=>o.classList.add('disabled'));
+  el.classList.add(selIdx===correctIdx?'selected-correct':'selected-wrong');
+  qsa('.quiz-opt', card)[correctIdx].classList.add('show-correct');
+  card.style.borderLeft = `3px solid ${selIdx===correctIdx?'var(--success)':'var(--danger)'}`;
+  S.qAnswers[qText] = selIdx;
+  localStorage.setItem('mq', JSON.stringify(S.qAnswers));
   renderQuiz();
 }
 
-// ===== KEYBOARD =====
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowRight'&&state.page==='flashcard')nextCard();
-  if(e.key==='ArrowLeft'&&state.page==='flashcard')prevCard();
-  if(e.key===' '&&state.page==='flashcard'){e.preventDefault();document.getElementById('flashcard').classList.toggle('flipped');}
-});
+// ===== LATIN =====
+function renderLatin() {
+  const groups = [...new Set(DATA.latin.map(l=>l.g))];
+  $('latinGroups').innerHTML = '<span class="tag tag-blue" style="cursor:pointer" onclick="filterLatinGroup(this,\'\')">全部</span>' +
+    groups.map(g => `<span class="tag tag-orange" style="cursor:pointer" onclick="filterLatinGroup(this,'${g}')">${g}</span>`).join('');
+  renderLatinList(DATA.latin);
+}
+function filterLatinGroup(el, g) {
+  renderLatinList(g ? DATA.latin.filter(l=>l.g===g) : DATA.latin);
+}
+function renderLatinList(items) {
+  $('latinList').innerHTML = items.map(l => `<div class="latin-item">
+    <span>${l.n}</span>
+    <span><span class="la">${l.l}</span><span class="badge ${l.v}">${l.v==='red'?'掌握':'识别'}</span></span>
+  </div>`).join('');
+}
+function filterLatin() {
+  const q = $('latinSearch').value.trim().toLowerCase();
+  renderLatinList(q ? DATA.latin.filter(l=>l.n.includes(q)||l.l.toLowerCase().includes(q)) : DATA.latin);
+}
 
-// ===== START =====
-init();
+// ===== NOTES =====
+function renderNotes() {
+  const html = `<h2>周德庆《微生物学》笔记</h2>
+<h3>一、绪论</h3>
+<p><b>微生物</b>：形体微小结构简单的低等生物。<b>五大共性</b>：①体积小面积大 ②吸收快转化快 ③生长旺繁殖快 ④适应强易变异 ⑤分布广种类多。</p>
+<p><b>列文虎克</b>：首次发现微生物。<b>巴斯德</b>：否定自然发生说、巴斯德消毒法、疫苗。<b>科赫</b>：纯培养技术、柯赫准则。<b>Woese三域</b>：细菌、古生菌、真核生物。</p>
+<h3>二、原核微生物</h3>
+<p><b>G⁺菌壁</b>：肽聚糖(40-90%)+磷壁酸。<b>G⁻菌壁</b>：肽聚糖(5-10%)+LPS+膜蛋白。<b>肽聚糖</b>：NAG-NAM+短肽尾+肽桥。<b>革兰氏染色</b>：G⁺紫、G⁻红。</p>
+<p><b>特殊结构</b>：荚膜（保护/贮存）、鞭毛（运动）、芽孢（抗逆休眠体，含DPA-Ca）、菌毛（附着）。<b>放线菌</b>：产抗生素。<b>支原体</b>：无细胞壁。<b>蓝细菌</b>：放氧光合作用。<b>立克次氏体</b>：专性活细胞内寄生。</p>
+<h3>三、真核微生物</h3>
+<p><b>酵母菌</b>：单细胞，出芽繁殖，细胞壁含甘露聚糖。<b>霉菌</b>：丝状真菌。<b>有性孢子</b>：卵孢子、接合孢子、子囊孢子、担孢子。<b>无性孢子</b>：分生孢子、孢囊孢子、节孢子、厚垣孢子。</p>
+<h3>四、病毒</h3>
+<p>只含一种核酸，专性活细胞内寄生。病毒粒子=核心+衣壳±包膜。<b>T4噬菌体</b>：吸附→侵入→增殖→装配→释放。<b>一步生长曲线</b>：潜伏期→裂解期→稳定期。<b>温和噬菌体</b>：形成前噬菌体，溶源性。<b>亚病毒</b>：类病毒(RNA)、朊病毒(蛋白质)。</p>
+<h3>五、营养</h3>
+<p><b>营养类型</b>：光能自养（蓝细菌）、光能异养（红螺菌）、化能自养（硝化细菌）、化能异养（大多数）。<b>运输方式</b>：单纯扩散→促进扩散→主动运输（主要）→基团转位（磷酸化）。<b>培养基原则</b>：目的明确、营养协调、条件适宜、经济节约。</p>
+<h3>六、代谢</h3>
+<p><b>产能途径</b>：EMP(2ATP)，HMP(NADPH₂)，ED(微生物特有)，TCA(24ATP，代谢枢纽)。<b>生物氧化</b>：发酵(厌氧)、有氧呼吸(O₂受体)、无氧呼吸(NO₃⁻/SO₄²⁻受体)。</p>
+<p><b>生物固氮</b>：N₂+8[H]+18~24ATP→2NH₃+H₂。需固氮酶、厌氧。<b>青霉素</b>：抑制转肽酶。<b>巴斯德效应</b>：氧抑制酒精发酵。</p>
+<h3>七、生长</h3>
+<p><b>生长曲线</b>：延滞期→对数期→稳定期→衰亡期。<b>连续培养</b>：恒浊法（收获菌体）、恒化法（科研）。<b>灭菌</b>(杀所有) vs <b>消毒</b>(杀病原)。121℃ 20-30min高压蒸汽灭菌。UV形成嘧啶二聚体。</p>
+<h3>八、遗传</h3>
+<p><b>Avery实验</b>证明DNA是遗传物质。<b>质粒</b>：自主复制环状DNA。<b>F因子</b>：F⁺(有质粒)、F⁻(无)、Hfr(整合)、F'(携带基因)。<b>基因重组</b>：转化→转导→接合→融合。</p>
+<p><b>DNA修复</b>：光复活→切除修复(无错误)→重组修复→SOS修复(产生突变)。<b>突变特点</b>：不对应性、自发性、稀有性、独立性、诱变性、稳定性、可逆性。<b>诱变育种步骤</b>：选择菌株→制备悬液→诱变处理→筛选→保藏。</p>
+<h3>九、生态</h3>
+<p><b>微生物关系</b>：互生、共生(地衣)、寄生、拮抗(抗生素)、捕食。<b>氮循环</b>：固N₂→NH₃→硝化→NO₃⁻→反硝化→N₂。<b>碳循环</b>：光合固定CO₂→微生物分解→CO₂回归，90%来自微生物。<b>BOD₅</b>：五日生化需氧量。饮用水：细菌&lt;100个/mL，大肠杆菌&lt;3个/L。</p>`;
+  $('notesContent').innerHTML = html;
+  $('chapterNav').innerHTML = '一,二,三,四,五,六,七,八,九'.split(',').map((c,i)=>`<button onclick="document.querySelector('#page-notes .notes-content').scrollTop=80*${i}">${c}</button>`).join('');
+}
+function filterNotes() {
+  const q = $('notesSearch').value.trim().toLowerCase();
+  if(!q){renderNotes();return}
+  const t = $('notesContent').innerText.split('\n').filter(l=>l.toLowerCase().includes(q));
+  $('notesContent').innerHTML = t.length ? t.map(l=>'<p>'+l.replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')+'</p>').join('') : '<div class="empty">未找到</div>';
+}
+
+// ===== SEARCH =====
+function globalSearch() {
+  const q = $('globalSearch').value.trim().toLowerCase();
+  const el = $('searchResults');
+  if(!q){el.innerHTML='<div class="empty"><div class="icon">🔍</div>输入关键词搜索</div>';return}
+  let r = [];
+  DATA.terms.forEach(t=>{if(t.n.includes(q)||t.d.includes(q))r.push({title:t.n,snippet:t.d,src:'名词',page:'terms'})});
+  DATA.qa.forEach(s=>{if(s.q.includes(q)||s.a.includes(q))r.push({title:s.q.slice(0,30)+'...',snippet:s.a.slice(0,80),src:'简答',page:'qa'})});
+  DATA.latin.forEach(l=>{if(l.n.includes(q)||l.l.toLowerCase().includes(q))r.push({title:l.n,snippet:l.l,src:'拉丁名',page:'latin'})});
+  if(r.length>30)r=r.slice(0,30);
+  if(!r.length){el.innerHTML='<div class="empty"><div class="icon">😕</div>未找到</div>';return}
+  el.innerHTML = r.map(rr => `<div class="card" style="cursor:pointer" onclick="switchPage('${rr.page}')">
+    <span class="tag tag-blue">${rr.src}</span>
+    <div style="font-weight:600;margin-top:4px">${rr.title.replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')}</div>
+    <div style="font-size:13px;color:var(--text2);margin-top:2px">${rr.snippet.slice(0,100).replace(new RegExp(q,'gi'),m=>'<mark>'+m+'</mark>')}</div>
+  </div>`).join('');
+}
 </script>
 </body>
 </html>
