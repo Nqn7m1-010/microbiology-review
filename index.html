@@ -126,11 +126,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   </div>
   <div class="nav" id="nav">
     <button class="nav-item active" data-page="home" onclick="switchPage('home')"><span class="icon">🏠</span>首页</button>
-    <button class="nav-item" data-page="notes" onclick="switchPage('notes')"><span class="icon">📖</span>笔记</button>
     <button class="nav-item" data-page="terms" onclick="switchPage('terms')"><span class="icon">📝</span>名词</button>
     <button class="nav-item" data-page="qa" onclick="switchPage('qa')"><span class="icon">❓</span>简答</button>
     <button class="nav-item" data-page="quiz" onclick="switchPage('quiz')"><span class="icon">✏️</span>刷题</button>
     <button class="nav-item" data-page="latin" onclick="switchPage('latin')"><span class="icon">🔬</span>拉丁名</button>
+    <button class="nav-item" data-page="notes" onclick="switchPage('notes')"><span class="icon">📖</span>笔记</button>
   </div>
   <div class="main">
     <!-- 首页 -->
@@ -151,13 +151,6 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
           <button class="nav-item" onclick="switchPage('quiz')" style="width:100%;padding:10px;background:var(--bg);border-radius:8px;border:none;font-size:13px;cursor:pointer">✏️ 刷选择题</button>
         </div>
       </div>
-    </div>
-
-    <!-- 笔记页 -->
-    <div class="page" id="page-notes">
-      <div class="search-wrap"><input type="text" id="notesSearch" placeholder="搜索笔记..." oninput="filterNotes()"></div>
-      <div class="chapter-nav" id="chapterNav"></div>
-      <div class="notes-content" id="notesContent">加载中...</div>
     </div>
 
     <!-- 名词页 -->
@@ -206,6 +199,13 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
       <div class="search-wrap"><input type="text" id="latinSearch" placeholder="搜索拉丁名或中文名..." oninput="filterLatin()"></div>
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px" id="latinGroups"></div>
       <div id="latinList"></div>
+    </div>
+
+    <!-- 笔记页 -->
+    <div class="page" id="page-notes">
+      <div class="search-wrap"><input type="text" id="notesSearch" placeholder="搜索笔记..." oninput="filterNotes()"></div>
+      <div class="chapter-nav" id="chapterNav"></div>
+      <div class="notes-content" id="notesContent">加载中...</div>
     </div>
 
     <!-- 搜索页 -->
@@ -512,31 +512,90 @@ function filterLatin() {
 
 // ===== NOTES =====
 function renderNotes() {
-  const html = `<h2>周德庆《微生物学》笔记</h2>
-<h3>一、绪论</h3>
-<p><b>微生物</b>：形体微小结构简单的低等生物。<b>五大共性</b>：①体积小面积大 ②吸收快转化快 ③生长旺繁殖快 ④适应强易变异 ⑤分布广种类多。</p>
-<p><b>列文虎克</b>：首次发现微生物。<b>巴斯德</b>：否定自然发生说、巴斯德消毒法、疫苗。<b>科赫</b>：纯培养技术、柯赫准则。<b>Woese三域</b>：细菌、古生菌、真核生物。</p>
-<h3>二、原核微生物</h3>
-<p><b>G⁺菌壁</b>：肽聚糖(40-90%)+磷壁酸。<b>G⁻菌壁</b>：肽聚糖(5-10%)+LPS+膜蛋白。<b>肽聚糖</b>：NAG-NAM+短肽尾+肽桥。<b>革兰氏染色</b>：G⁺紫、G⁻红。</p>
-<p><b>特殊结构</b>：荚膜（保护/贮存）、鞭毛（运动）、芽孢（抗逆休眠体，含DPA-Ca）、菌毛（附着）。<b>放线菌</b>：产抗生素。<b>支原体</b>：无细胞壁。<b>蓝细菌</b>：放氧光合作用。<b>立克次氏体</b>：专性活细胞内寄生。</p>
-<h3>三、真核微生物</h3>
-<p><b>酵母菌</b>：单细胞，出芽繁殖，细胞壁含甘露聚糖。<b>霉菌</b>：丝状真菌。<b>有性孢子</b>：卵孢子、接合孢子、子囊孢子、担孢子。<b>无性孢子</b>：分生孢子、孢囊孢子、节孢子、厚垣孢子。</p>
-<h3>四、病毒</h3>
-<p>只含一种核酸，专性活细胞内寄生。病毒粒子=核心+衣壳±包膜。<b>T4噬菌体</b>：吸附→侵入→增殖→装配→释放。<b>一步生长曲线</b>：潜伏期→裂解期→稳定期。<b>温和噬菌体</b>：形成前噬菌体，溶源性。<b>亚病毒</b>：类病毒(RNA)、朊病毒(蛋白质)。</p>
-<h3>五、营养</h3>
-<p><b>营养类型</b>：光能自养（蓝细菌）、光能异养（红螺菌）、化能自养（硝化细菌）、化能异养（大多数）。<b>运输方式</b>：单纯扩散→促进扩散→主动运输（主要）→基团转位（磷酸化）。<b>培养基原则</b>：目的明确、营养协调、条件适宜、经济节约。</p>
-<h3>六、代谢</h3>
-<p><b>产能途径</b>：EMP(2ATP)，HMP(NADPH₂)，ED(微生物特有)，TCA(24ATP，代谢枢纽)。<b>生物氧化</b>：发酵(厌氧)、有氧呼吸(O₂受体)、无氧呼吸(NO₃⁻/SO₄²⁻受体)。</p>
-<p><b>生物固氮</b>：N₂+8[H]+18~24ATP→2NH₃+H₂。需固氮酶、厌氧。<b>青霉素</b>：抑制转肽酶。<b>巴斯德效应</b>：氧抑制酒精发酵。</p>
-<h3>七、生长</h3>
-<p><b>生长曲线</b>：延滞期→对数期→稳定期→衰亡期。<b>连续培养</b>：恒浊法（收获菌体）、恒化法（科研）。<b>灭菌</b>(杀所有) vs <b>消毒</b>(杀病原)。121℃ 20-30min高压蒸汽灭菌。UV形成嘧啶二聚体。</p>
-<h3>八、遗传</h3>
-<p><b>Avery实验</b>证明DNA是遗传物质。<b>质粒</b>：自主复制环状DNA。<b>F因子</b>：F⁺(有质粒)、F⁻(无)、Hfr(整合)、F'(携带基因)。<b>基因重组</b>：转化→转导→接合→融合。</p>
-<p><b>DNA修复</b>：光复活→切除修复(无错误)→重组修复→SOS修复(产生突变)。<b>突变特点</b>：不对应性、自发性、稀有性、独立性、诱变性、稳定性、可逆性。<b>诱变育种步骤</b>：选择菌株→制备悬液→诱变处理→筛选→保藏。</p>
-<h3>九、生态</h3>
-<p><b>微生物关系</b>：互生、共生(地衣)、寄生、拮抗(抗生素)、捕食。<b>氮循环</b>：固N₂→NH₃→硝化→NO₃⁻→反硝化→N₂。<b>碳循环</b>：光合固定CO₂→微生物分解→CO₂回归，90%来自微生物。<b>BOD₅</b>：五日生化需氧量。饮用水：细菌&lt;100个/mL，大肠杆菌&lt;3个/L。</p>`;
-  $('notesContent').innerHTML = html;
-  $('chapterNav').innerHTML = '一,二,三,四,五,六,七,八,九'.split(',').map((c,i)=>`<button onclick="document.querySelector('#page-notes .notes-content').scrollTop=80*${i}">${c}</button>`).join('');
+  var h = '<h2>周德庆《微生物学教程》笔记</h2><p style="color:var(--text2);font-size:13px">覆盖全部9章 含详细对比表格</p>';
+  h += '<h3 id="ch1">第一章 绪论</h3>';
+  h += '<p><b>微生物</b>：形体微小、结构简单的低等生物的通称。</p>';
+  h += '<p><b>五界系统</b>（Whittaker）：原核生物界、原生生物界、真菌界、动物界、植物界。</p>';
+  h += '<p><b>三域系统</b>（Woese）：细菌(Bacteria)、古生菌(Archaea)、真核生物(Eukarya)。</p>';
+  h += '<p><b>五大共性</b>：①体积小面积大 ②吸收快转化快 ③生长旺繁殖快 ④适应强易变异 ⑤分布广种类多。</p>';
+  h += '<p><b>主要贡献</b>：列文虎克（首次发现微生物）、巴斯德（否定自然发生说、消毒法、疫苗）、科赫（纯培养技术、柯赫准则）。</p>';
+  h += '<p><b>柯赫准则</b>：①病原伴随病害存在 ②能分离纯培养 ③接种纯培养诱发原病害 ④重新分离同种病原。</p>';
+  h += '<p><b>分类</b>：双名法(属名+种名)。分类单位：界门纲目科属种。</p>';
+
+  h += '<h3 id="ch2">第二章 原核微生物</h3>';
+  h += '<p><b>形态</b>：球菌、杆菌、螺旋菌（弧菌/螺旋菌）。大小0.5-1um。</p>';
+  h += '<p><b>基本结构</b>：细胞壁、细胞膜、间体、核区(拟核)、核糖体(70S)、细胞质。</p>';
+  h += '<p><b>特殊结构</b>：荚膜(保护/贮存)、鞭毛(运动)、芽孢(抗逆休眠体)、菌毛(附着)。</p>';
+  h += '<p><b>G+ vs G- 细胞壁</b>：G+厚30-40nm，肽聚糖40-90%，含磷壁酸。G-薄8-10nm，肽聚糖5-10%，含LPS(内毒素)+膜蛋白。</p>';
+  h += '<p><b>肽聚糖单体</b>：双糖单位(NAG-NAM)+短肽尾(L-Ala-D-Glu-L-Lys/L-DAP-D-Ala)+肽桥(G+为5Gly)。</p>';
+  h += '<p><b>革兰氏染色</b>：结晶紫→碘液→酒精脱色→番红复染。G+保留紫色，G-呈红色。</p>';
+  h += '<p><b>芽孢</b>：核心→皮层→芽孢衣，含DPA-Ca，含水量低，抗逆性极强。不是繁殖结构。</p>';
+  h += '<p><b>放线菌</b>：丝状分枝细菌，产抗生素。菌丝分基内菌丝、气生菌丝、孢子丝。</p>';
+  h += '<p><b>其他</b>：立克次氏体(G-专性活细胞内寄生)、支原体(无细胞壁最小细胞)、衣原体(能量寄生物)、蓝细菌(放氧光合作用)。</p>';
+
+  h += '<h3 id="ch3">第三章 真核微生物</h3>';
+  h += '<p><b>酵母菌</b>：单细胞出芽繁殖，细胞壁含甘露聚糖。有性繁殖产生子囊孢子。</p>';
+  h += '<p><b>生活史类型</b>：①单倍体型(八孢裂殖酵母) ②双倍体型(路德类酵母) ③世代交替型(酿酒酵母)。</p>';
+  h += '<p><b>霉菌</b>：丝状真菌。菌丝分无隔(低等：根霉、毛霉)和有隔(高等：青霉、曲霉)。</p>';
+  h += '<p><b>无性孢子</b>：孢囊孢子、分生孢子、节孢子、厚垣孢子、游动孢子。</p>';
+  h += '<p><b>有性孢子</b>：卵孢子(壶菌门)、接合孢子(接合菌门)、子囊孢子(子囊菌门)、担孢子(担子菌门)。</p>';
+  h += '<p><b>四类菌落比较</b>：细菌(湿润透明多彩) / 放线菌(干燥不透明土腥味) / 酵母菌(湿润乳白酒香) / 霉菌(干燥绒毛霉味)。</p>';
+
+  h += '<h3 id="ch4">第四章 病毒</h3>';
+  h += '<p><b>特点</b>：①超显微10-300nm ②无细胞结构，只含一种核酸 ③专性活细胞内寄生 ④对抗生素不敏感，对干扰素敏感。</p>';
+  h += '<p><b>病毒粒子</b>：核心(核酸)+衣壳(蛋白质)=核衣壳 包膜(脂蛋白)。对称体制：螺旋(TMV)、二十面体(腺病毒)、复合(T4噬菌体)。</p>';
+  h += '<p><b>T4噬菌体</b>：头部(二十面体含dsDNA)+颈部+尾部。繁殖：吸附 侵入(注射DNA) 增殖 装配 裂解释放。</p>';
+  h += '<p><b>一步生长曲线</b>：潜伏期 裂解期 稳定期。裂解量=每个细胞释放的新噬菌体平均数。</p>';
+  h += '<p><b>温和噬菌体</b>：DNA整合到宿主(前噬菌体) 溶源性 随宿主同步复制。溶源性细菌特点：遗传性、自发裂解、诱发裂解、免疫性、复愈、溶源转变。</p>';
+  h += '<p><b>亚病毒</b>：类病毒(仅RNA)、拟病毒、阮病毒(仅蛋白质无核酸)。</p>';
+
+  h += '<h3 id="ch5">第五章 营养</h3>';
+  h += '<p><b>六大营养物</b>：碳源、氮源、能源、生长因子、无机盐、水。</p>';
+  h += '<p><b>四种营养类型</b>：光能自养(蓝细菌，光+CO2+H2O) / 光能异养(红螺菌，光+有机物) / 化能自养(硝化细菌，无机氧化+CO2) / 化能异养(大多数，有机物为碳源和能源)。</p>';
+  h += '<p><b>四种运输方式</b>：单纯扩散(不耗能顺梯度) 促进扩散(载体顺梯度) 主动运输(载体逆梯度耗能，主要方式) 基团转位(PTS系统磷酸化)。</p>';
+  h += '<p><b>培养基原则</b>：目的明确、营养协调(C/N=100:0.5-2)、条件适宜(pH/渗透压/aw/Eh)、经济节约。</p>';
+
+  h += '<h3 id="ch6">第六章 代谢</h3>';
+  h += '<p><b>产能途径</b>：EMP(2ATP，普遍存在) HMP(NADPH2，提供碳架) ED(微生物特有，细菌酒精发酵) TCA(24ATP，代谢枢纽)。</p>';
+  h += '<p><b>生物氧化三种类型</b>：发酵(无氧，底物水平磷酸化，有机物为受体，2ATP) / 有氧呼吸(有氧，氧化磷酸化，O2为受体，38ATP) / 无氧呼吸(无氧，氧化磷酸化，NO3-/SO42-/CO2为受体)。</p>';
+  h += '<p><b>发酵类型</b>：乙醇发酵(酵母菌)、同型乳酸发酵(乳杆菌)、异型乳酸发酵(明串珠菌)、丁酸发酵(梭菌)、混合酸发酵(大肠杆菌)。</p>';
+  h += '<p><b>生物固氮</b>：N2+8[H]+18~24ATP 2NH3+H2。需固氮酶(MoFe蛋白+Fe蛋白)、ATP、还原力、严格厌氧。</p>';
+  h += '<p><b>肽聚糖合成三阶段</b>：①细胞质(Park核苷酸) ②细胞膜(与细菌萜醇结合双糖肽亚单位) ③细胞膜外(转糖基转肽交联)。青霉素抑制转肽酶。</p>';
+  h += '<p><b>巴斯德效应</b>：氧抑制酵母菌酒精发酵。</p>';
+
+  h += '<h3 id="ch7">第七章 生长</h3>';
+  h += '<p><b>生长曲线</b>：延滞期(适应，菌数不变) 对数期(指数增长，代谢最强) 稳定期(菌数最大，积累产物) 衰亡期(死亡增殖，细胞自溶)。</p>';
+  h += '<p><b>连续培养</b>：恒浊法(收获菌体)、恒化法(科研限制性因子)。同步生长：机械法(离心/过滤)、诱导法(温度/营养调整)。</p>';
+  h += '<p><b>微生物与氧</b>：专性好氧(固氮菌) / 兼性厌氧(酵母菌/大肠杆菌) / 微好氧(霍乱弧菌) / 耐氧(乳酸乳杆菌) / 专性厌氧(梭菌/产甲烷菌)。</p>';
+  h += '<p><b>灭菌消毒</b>：灭菌(杀所有包括芽孢) / 消毒(杀病原体) / 防腐(抑制生长) / 化疗(选择性毒力)。高压蒸汽灭菌121C 20-30min。紫外线形成嘧啶二聚体。</p>';
+  h += '<p><b>环境因素</b>：温度(嗜冷<20C/嗜温20-45C/嗜热>45C)、pH(细菌6.5-7.5/放线菌7.5-8/霉菌5-6)、氧气、辐射、渗透压。</p>';
+
+  h += '<h3 id="ch8">第八章 遗传</h3>';
+  h += '<p><b>DNA是遗传物质的证明</b>：Avery转化实验(1944)、Hershey-Chase噬菌体实验(1952)、病毒重建实验(1956)。</p>';
+  h += '<p><b>质粒</b>：染色体外自主复制的小型闭合环状DNA。种类：F因子(致育)、R因子(耐药)、Col因子(大肠杆菌素)、Ti质粒(诱癌)、降解质粒。</p>';
+  h += '<p><b>基因突变特点</b>：不对应性、自发性、稀有性、独立性、诱变性、稳定性、可逆性。</p>';
+  h += '<p><b>自发性证明</b>：变量试验(Luria-Delbruck)、涂布试验(Newcombe)、影印培养试验(Lederberg)。</p>';
+  h += '<p><b>DNA损伤修复</b>：光复活(可见光) 切除修复(暗修复，无错误) 重组修复(复制后，无错误) SOS修复(易误修复，产生突变)。</p>';
+  h += '<p><b>原核基因重组</b>：转化(游离DNA) 转导(噬菌体媒介) 接合(性菌毛，F+/F-/Hfr/F) 原生质体融合(人工诱导)。</p>';
+  h += '<p><b>F因子四种菌株</b>：F+(有质粒雄性)、F-(无质粒雌性)、Hfr(F整合到染色体重组)、F(携带染色体基因的F因子)。</p>';
+  h += '<p><b>准性生殖</b>：菌丝联结质配异核体核配体细胞交换和单倍体化。</p>';
+  h += '<p><b>菌种保藏</b>：低温、干燥、隔绝空气、冷冻干燥。</p>';
+
+  h += '<h3 id="ch9">第九章 生态</h3>';
+  h += '<p><b>微生物间关系</b>：互生(双方有利，如根际微生物) / 共生(紧密结合，地衣=藻+真菌) / 寄生(病原体) / 拮抗(抗生素) / 捕食(原生动物吞细菌)。</p>';
+  h += '<p><b>碳循环</b>：光合作用固定CO2 有机物 微生物分解 CO2回归大气。90%的CO2由微生物代谢产生。</p>';
+  h += '<p><b>氮循环</b>：固N2 NH3(固氮菌/根瘤菌) 氨化有机N NH3(腐败微生物) 硝化NH3 NO3-(亚硝化菌/硝化菌) 反硝化NO3- N2(反硝化菌)。</p>';
+  h += '<p><b>硫循环</b>：硫化H2S SO42-(硫化细菌) / 反硫化SO42- H2S(反硫化细菌)。</p>';
+  h += '<p><b>废水处理</b>：活性污泥法(好氧絮凝团)、生物膜法(滴滤池)、沼气发酵(厌氧产甲烷)。</p>';
+  h += '<p><b>水质指标</b>：BOD5(五日生化需氧量)、COD(化学需氧量)。饮用水标准：细菌<100个/mL，大肠杆菌<3个/L。</p>';
+
+  $('notesContent').innerHTML = h;
+  var chs = [{id:"ch1",lb:"一"},{id:"ch2",lb:"二"},{id:"ch3",lb:"三"},{id:"ch4",lb:"四"},{id:"ch5",lb:"五"},{id:"ch6",lb:"六"},{id:"ch7",lb:"七"},{id:"ch8",lb:"八"},{id:"ch9",lb:"九"}];
+  var nav = '';
+  for (var i = 0; i < chs.length; i++) {
+    nav += '<button onclick="document.getElementById(\'' + chs[i].id + '\').scrollIntoView({behavior:\'smooth\'})">' + chs[i].lb + '</button>';
+  }
+  $('chapterNav').innerHTML = nav;
 }
 function filterNotes() {
   const q = $('notesSearch').value.trim().toLowerCase();
