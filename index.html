@@ -134,7 +134,11 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
   </div>
   <div class="main">
     <!-- 首页 -->
-    <div class="page active" id="page-home">
+    <div class="page active" id="page-outline">
+	      <div id="outlineContent"></div>
+	    </div>
+
+	    <div class="page" id="page-home">
       <div class="dashboard" id="dashCards"></div>
       <div class="card" style="text-align:center;padding:20px">
         <div style="font-size:32px;margin-bottom:8px">🦠</div>
@@ -344,6 +348,7 @@ function switchPage(p) {
   qsa('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === p));
   qsa('.page').forEach(v => v.classList.toggle('active', v.id === 'page-'+p));
   if(p==='quiz') showChallenge();
+  if(p==='outline') renderOutline();
   if(p==='search') $('globalSearch').focus();
   if(p==='home') renderHome();
 }
@@ -434,6 +439,48 @@ var quizIndex = 0;
 var quizAnswered = 0;
 var quizCorrect = 0;
 
+
+// ===== OUTLINE =====
+var outlineData = [
+  {ch:'绪论',points:[{name:'微生物的定义与特点',detail:'五大共性：体积小面积大、吸收快转化快、生长旺繁殖快、适应强易变异、分布广种类多'},{name:'微生物学发展史',detail:'列文虎克(首次发现)、巴斯德(否定自然发生说、消毒法、疫苗)、科赫(纯培养技术、柯赫准则)'},{name:'生物分类系统',detail:'五界系统(Whittaker)、三域系统(Woese)：细菌、古生菌、真核生物'},{name:'微生物分类方法',detail:'双名法、分类单位(界门纲目科属种)、经典法/数值法/分子法'}],hard:'柯赫准则的应用、三域系统的理解',exam:'微生物五大共性、巴斯德和科赫的贡献'},
+  {ch:'原核微生物',points:[{name:'细菌细胞壁',detail:'G+菌(肽聚糖40-90%+磷壁酸)、G-菌(肽聚糖5-10%+LPS+膜蛋白)、革兰氏染色原理'},{name:'肽聚糖结构',detail:'双糖单位(NAG-NAM)+短肽尾(L-Ala-D-Glu-L-Lys-D-Ala)+肽桥(G+为5Gly)'},{name:'细菌特殊结构',detail:'荚膜(保护/贮存)、鞭毛(运动)、芽孢(抗逆休眠体含DPA-Ca)、菌毛(附着)'},{name:'缺壁细菌',detail:'原生质体(G+)、球状体(G-)、L型细菌、支原体(天然无壁)'},{name:'放线菌',detail:'丝状分枝细菌，产抗生素，菌丝分基内/气生/孢子丝'},{name:'其他原核微生物',detail:'立克次氏体(专性活细胞内寄生)、支原体(无壁最小细胞)、衣原体(能量寄生物)、蓝细菌(放氧光合)'}],hard:'肽聚糖合成过程、革兰氏染色机制、芽孢耐热机制',exam:'G+与G-细胞壁区别、革兰氏染色、细菌特殊结构功能'},
+  {ch:'真核微生物',points:[{name:'酵母菌',detail:'单细胞、出芽繁殖、细胞壁含甘露聚糖、有性繁殖产生子囊孢子'},{name:'酵母菌生活史',detail:'单倍体型(八孢裂殖酵母)、双倍体型(路德类酵母)、世代交替型(酿酒酵母)'},{name:'霉菌',detail:'丝状真菌、菌丝分无隔(根霉/毛霉)和有隔(青霉/曲霉)'},{name:'真菌孢子',detail:'无性孢子(孢囊/分生/节/厚垣)、有性孢子(卵/接合/子囊/担)'},{name:'四类菌落比较',detail:'细菌(湿润透明)、放线菌(干燥不透明)、酵母菌(湿润乳白)、霉菌(干燥绒毛)'}],hard:'酵母菌生活史三种类型、真菌有性生殖过程',exam:'酵母菌繁殖方式、无性孢子与有性孢子类型、菌落特征比较'},
+  {ch:'病毒',points:[{name:'病毒特点',detail:'超显微(10-300nm)、无细胞结构一种核酸、专性活细胞内寄生、抗抗生素'},{name:'病毒结构',detail:'核心(核酸)+衣壳(蛋白质)=核衣壳±包膜，对称体制(螺旋/二十面体/复合)'},{name:'T4噬菌体',detail:'头部(二十面体含dsDNA)+颈部+尾部，繁殖：吸附→侵入→增殖→装配→释放'},{name:'一步生长曲线',detail:'潜伏期→裂解期→稳定期，裂解量=每个细胞释放新噬菌体数'},{name:'温和噬菌体',detail:'DNA整合到宿主(前噬菌体)、溶源性、随宿主同步复制、可诱发裂解'},{name:'亚病毒',detail:'类病毒(仅RNA)、拟病毒、朊病毒(仅蛋白质无核酸)'}],hard:'一步生长曲线、溶源性细菌特性、温和噬菌体与烈性噬菌体区别',exam:'病毒特征、T4噬菌体繁殖过程、一步生长曲线、亚病毒种类'},
+  {ch:'营养',points:[{name:'六大营养物',detail:'碳源、氮源、能源、生长因子、无机盐、水'},{name:'四种营养类型',detail:'光能自养(蓝细菌)、光能异养(红螺菌)、化能自养(硝化细菌)、化能异养(大多数)'},{name:'物质运输方式',detail:'单纯扩散(不耗能)、促进扩散(载体顺梯度)、主动运输(载体验耗能主要方式)、基团转位(磷酸化)'},{name:'培养基',detail:'原则(目的明确/营养协调/条件适宜/经济节约)、类型(合成/天然/半合成、固体/半固体/液体、选择/鉴别)'}],hard:'基团转位机制、四种营养类型的能量来源和碳源区分',exam:'营养类型判断、运输方式特点比较'},
+  {ch:'代谢',points:[{name:'产能途径',detail:'EMP(2ATP普遍存在)、HMP(NADPH2提供碳架)、ED(微生物特有细菌酒精发酵)、TCA(24ATP代谢枢纽)'},{name:'生物氧化',detail:'发酵(无氧底物水平磷酸化有机物受体2ATP)、有氧呼吸(有氧氧化磷酸化O2受体38ATP)、无氧呼吸(无氧NO3-/SO42-/CO2受体)'},{name:'发酵类型',detail:'乙醇发酵(酵母)、同型乳酸发酵(乳杆菌)、异型乳酸发酵(明串珠菌)、丁酸发酵(梭菌)'},{name:'生物固氮',detail:'N2+8[H]+18~24ATP→2NH3+H2，需固氮酶(MoFe+Fe蛋白)+ATP+还原力+厌氧'},{name:'肽聚糖合成',detail:'三阶段：细胞质(Park核苷酸)→细胞膜(双糖肽亚单位)→细胞膜外(转糖基+转肽交联)'},{name:'代谢调控',detail:'巴斯德效应(氧抑制酒精发酵)、反馈抑制、操纵子学说、酶诱导合成'}],hard:'ED途径特点、无氧呼吸电子受体、肽聚糖合成三阶段和青霉素作用位点',exam:'产能途径比较、有氧/无氧/发酵区别、生物固氮条件'},
+  {ch:'生长',points:[{name:'生长曲线',detail:'延滞期(适应)→对数期(指数增长代谢最强)→稳定期(菌量最大积累产物)→衰亡期(死亡自溶)'},{name:'连续培养',detail:'恒浊法(收获菌体)、恒化法(科研限制性因子)'},{name:'微生物与氧',detail:'专性好氧(固氮菌)、兼性厌氧(酵母/大肠)、微好氧(霍乱弧菌)、耐氧(乳酸菌)、专性厌氧(梭菌)'},{name:'灭菌消毒',detail:'灭菌(杀所有含芽孢)、消毒(杀病原体)、防腐(抑制)、化疗(选择性毒力)'},{name:'环境因素',detail:'温度(嗜冷<20C/嗜温20-45C/嗜热>45C)、pH(细菌6.5-7.5/放线菌7.5-8/霉菌5-6)、UV形成嘧啶二聚体'}],hard:'生长曲线各时期特点和应用、连续培养原理、专性厌氧菌的氧毒害机制',exam:'生长曲线四时期、灭菌与消毒区别、高压蒸汽灭菌条件'},
+  {ch:'遗传',points:[{name:'DNA是遗传物质的证明',detail:'Avery转化实验(1944)、Hershey-Chase噬菌体实验(1952)、病毒重建实验(1956)'},{name:'质粒',detail:'染色体外自主复制环状DNA，种类：F因子/R因子/Col因子/Ti质粒/降解质粒'},{name:'基因突变',detail:'特点(不对应性/自发性/稀有性/独立性/诱变性/稳定性/可逆性)、类型(点突变/移码突变/染色体畸变)'},{name:'突变自发性证明',detail:'变量试验(Luria-Delbruck)、涂布试验(Newcombe)、影印培养试验(Lederberg)'},{name:'DNA损伤修复',detail:'光复活→切除修复(无错误)→重组修复(无错误)→SOS修复(易误修复产生突变)'},{name:'原核基因重组',detail:'转化(游离DNA)、转导(噬菌体媒介)、接合(性菌毛F+/F-/Hfr/F)、原生质体融合'},{name:'F因子',detail:'F+(有质粒雄性)、F-(无质粒雌性)、Hfr(整合到染色体)、F(携带染色体基因)'},{name:'诱变育种',detail:'选择菌株→制备悬液→诱变处理→中间培养→筛选→保藏'}],hard:'突变自发性的三个实验证明、四种DNA修复系统比较、F因子四种菌株及杂交结果',exam:'DNA是遗传物质的证明实验、质粒特性、基因重组四种方式、F因子类型'},
+  {ch:'生态',points:[{name:'微生物间关系',detail:'互生(双方有利)、共生(地衣=藻+真菌)、寄生(病原体)、拮抗(抗生素)、捕食(原生动物吞细菌)'},{name:'碳循环',detail:'光合固定CO2→有机物→微生物分解→CO2回归，90%来自微生物'},{name:'氮循环',detail:'固N2→NH3(固氮菌/根瘤菌)→氨化→硝化NH3→NO3-→反硝化NO3-→N2'},{name:'废水处理',detail:'活性污泥法(好氧絮凝团)、生物膜法(滴滤池)、沼气发酵(厌氧产甲烷)'},{name:'水质指标',detail:'BOD5(五日生化需氧量)、COD(化学需氧量)、饮用水标准(细菌<100/mL大肠杆菌<3/L)'}],hard:'氮循环全过程(固氮/氨化/硝化/反硝化)、活性污泥法原理',exam:'微生物间五种关系、氮循环过程、BOD5含义'}
+];
+
+function renderOutline() {
+  var h = '<div style="font-weight:600;font-size:16px;margin-bottom:8px">复习大纲</div>';
+  h += '<div style="font-size:13px;color:var(--text2);margin-bottom:12px">基于重点概括文件整理，点击章节可跳转刷题</div>';
+  for (var i=0;i<outlineData.length;i++) {
+    var o = outlineData[i];
+    h += '<div class="card" style="cursor:pointer" onclick="startLevel('+i+')">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">';
+    h += '<div style="font-weight:600;font-size:15px;color:var(--primary)">第'+(i+1)+'章 '+o.ch+'</div>';
+    h += '<span style="font-size:12px;color:var(--text2)">'+o.points.length+'个知识点 ⏺ 刷题</span></div>';
+    h += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">';
+    for (var j=0;j<o.points.length;j++) {
+      h += '<span class="tag tag-blue">'+o.points[j].name+'</span>';
+    }
+    h += '</div>';
+    // Detailed points (collapsible)
+    h += '<div style="font-size:12px;color:var(--text2);line-height:1.6;margin:6px 0;padding:8px;background:var(--bg);border-radius:6px;display:none" id="outlineDetail'+i+'">';
+    for (var j=0;j<o.points.length;j++) {
+      h += '<div style="margin-bottom:4px"><b>'+(j+1)+'. '+o.points[j].name+'</b>：'+o.points[j].detail+'</div>';
+    }
+    h += '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">';
+    h += '<div style="color:var(--danger);font-size:12px"><b>难点</b>：'+o.hard+'</div>';
+    h += '<div style="color:var(--success);font-size:12px;margin-top:2px"><b>考点</b>：'+o.exam+'</div>';
+    h += '</div></div>';
+    h += '<button onclick="event.stopPropagation();var d=document.getElementById(\'outlineDetail'+i+'\');d.style.display=d.style.display==\'none\'?\'block\':\'none\'" style="padding:4px 12px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;font-size:11px;color:var(--text2)">展开详情</button>';
+    h += '</div>';
+  }
+  document.getElementById('outlineContent').innerHTML = h;
+}
 
 var chapters = ['绪论','原核微生物','真核微生物','病毒','营养','代谢','生长','遗传','生态'];
 var chStars = JSON.parse(localStorage.getItem('chStars')||'[0,0,0,0,0,0,0,0,0]');
