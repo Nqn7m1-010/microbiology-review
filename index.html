@@ -6,9 +6,9 @@
 <title>微生物学复习</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#f5f6fa;--card:#fff;--text:#2d3436;--text2:#b2bec3;--border:#e8ecf1;--primary:#5b6abf;--primary-light:#7c8cdb;--primary-dark:#3d4a9a;--accent:#f59e42;--success:#34c759;--danger:#ff6b6b;--shadow:0 4px 20px rgba(91,106,191,0.10);--shadow-lg:0 12px 40px rgba(91,106,191,0.15);--radius:18px;--radius-sm:12px;--radius-xs:8px}
+:root{--bg:#f4f6f9;--card:#fff;--text:#1a2332;--text2:#6b7a8f;--border:#e8ecf1;--primary:#2563eb;--primary-light:#dbeafe;--accent:#f59e0b;--success:#10b981;--danger:#ef4444;--shadow:0 1px 3px rgba(0,0,0,.06);--radius:10px;--radius-sm:8px}
 body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;height:100vh;overflow:hidden}
-.dark{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--text2:#94a3b8;--border:#334155;--shadow:0 4px 20px rgba(0,0,0,.2);--shadow-lg:0 12px 40px rgba(0,0,0,.3);--primary-light:#2d3a6f}
+.dark{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--text2:#94a3b8;--border:#334155;--shadow:0 1px 3px rgba(0,0,0,.2)}
 
 /* App shell */
 .app{display:flex;flex-direction:column;height:100vh;max-width:800px;margin:0 auto}
@@ -168,37 +168,13 @@ body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;backgr
     </div>
 
     <!-- 刷题页 -->
-    <div class="page" id="page-quiz">
-      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        <select id="quizChapter" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);outline:none;flex:1">
-          <option value="">全部章节</option>
-          <option value="绪论">绪论</option>
-          <option value="原核微生物">原核微生物</option>
-          <option value="真核微生物">真核微生物</option>
-          <option value="病毒">病毒</option>
-          <option value="营养">营养</option>
-          <option value="代谢">代谢</option>
-          <option value="生长">生长</option>
-          <option value="遗传">遗传</option>
-          <option value="生态">生态</option>
-        </select>
-        <select id="quizCount" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);outline:none">
-          <option value="10">10题</option>
-          <option value="20">20题</option>
-          <option value="30" selected>30题</option>
-          <option value="0">全部</option>
-        </select>
-        <button onclick="renderQuiz()" style="padding:8px 14px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">刷新</button>
-      </div>
-      <div id="quizStatus" style="font-size:13px;color:var(--text2);margin-bottom:6px"></div>
-      <div id="quizCard" style="display:none"></div>
-      <div style="display:flex;gap:6px;margin-top:8px" id="quizNav" style="display:none">
-        <button onclick="prevQuestion()" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">上一题</button>
-        <button onclick="nextQuestion()" style="padding:8px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">下一题</button>
-        <button onclick="startQuiz()" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">重新开始</button>
-      </div>
-      <div id="quizResult" style="display:none"></div>
-    </div>
+    	    <div class="page" id="page-quiz">
+	      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+	        <button id="modePractice" onclick="setQuizMode('practice')" style="padding:6px 14px;border:1.5px solid var(--primary);border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:12px;font-weight:600">刷题模式</button>
+	        <button id="modeChallenge" onclick="setQuizMode('challenge')" style="padding:6px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);color:var(--text2);cursor:pointer;font-size:12px">闯关模式</button>
+	      </div>
+	      <div id="quizPanel"></div>
+	    </div>
 
     <!-- 拉丁名页 -->
     <div class="page" id="page-latin">
@@ -371,7 +347,7 @@ function switchPage(p) {
   S.page = p;
   qsa('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === p));
   qsa('.page').forEach(v => v.classList.toggle('active', v.id === 'page-'+p));
-  if(p==='quiz') renderQuiz();
+  if(p==='quiz') showPracticeMode();
   if(p==='search') $('globalSearch').focus();
   if(p==='home') renderHome();
 }
@@ -462,98 +438,175 @@ var quizIndex = 0;
 var quizAnswered = 0;
 var quizCorrect = 0;
 
-function startQuiz() {
+var chapters = ['绪论','原核微生物','真核微生物','病毒','营养','代谢','生长','遗传','生态'];
+var chStars = JSON.parse(localStorage.getItem('chStars')||'[0,0,0,0,0,0,0,0,0]');
+
+function setQuizMode(mode) {
+  var pb = document.getElementById('modePractice');
+  var cb = document.getElementById('modeChallenge');
+  if (mode === 'practice') {
+    pb.style.background='var(--primary)';pb.style.color='#fff';pb.style.fontWeight='600';
+    cb.style.background='var(--card)';cb.style.color='var(--text2)';cb.style.fontWeight='400';
+    showPracticeMode();
+  } else {
+    cb.style.background='var(--primary)';cb.style.color='#fff';cb.style.fontWeight='600';
+    pb.style.background='var(--card)';pb.style.color='var(--text2)';pb.style.fontWeight='400';
+    showChallengeMode();
+  }
+}
+
+function showPracticeMode() {
+  var chs = ['全部','绪论','原核微生物','真核微生物','病毒','营养','代谢','生长','遗传','生态'];
+  var opts = chs.map(function(c){return '<option value="'+c+'">'+c+'</option>'}).join('');
+  var h = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+  h += '<select id="quizChapter" style="padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);outline:none;flex:1">'+opts+'</select>';
+  h += '<button onclick="startPractice()" style="padding:8px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">开始</button>';
+  h += '</div><div id="quizStatus"></div><div id="quizCard" style="display:none"></div>';
+  h += '<div style="display:flex;gap:6px;margin-top:8px" id="quizNav"></div><div id="quizResult"></div>';
+  document.getElementById('quizPanel').innerHTML = h;
+}
+
+function startPractice() {
   var ch = document.getElementById('quizChapter').value;
-  var pool = ch ? DATA.quiz.filter(function(q){return q.c===ch}) : DATA.quiz.slice();
+  var pool = ch === '全部' ? DATA.quiz.slice() : DATA.quiz.filter(function(q){return q.c===ch});
   quizQuestions = pool.slice().sort(function(){return Math.random()-0.5});
-  quizIndex = 0;
-  quizAnswered = 0;
-  quizCorrect = 0;
+  quizIndex = 0; quizAnswered = 0; quizCorrect = 0;
   document.getElementById('quizCard').style.display = 'block';
-  document.getElementById('quizNav').style.display = 'flex';
-  document.getElementById('quizResult').style.display = 'none';
   showQuestion();
 }
 
 function showQuestion() {
-  if (quizIndex >= quizQuestions.length) {
-    showQuizResult();
-    return;
-  }
+  if (quizIndex >= quizQuestions.length) { showPracticeResult(); return; }
   var q = quizQuestions[quizIndex];
-  var ua = S.qAnswers[q.q];
-  var ans = ua !== undefined;
-  
-  var progress = '<div class="quiz-progress-bar"><div class="fill" style="width:' + Math.round(quizIndex/quizQuestions.length*100) + '%"></div></div>';
-  var status = '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2)"><span>' + (quizIndex+1) + '/' + quizQuestions.length + '</span><span>答' + quizAnswered + ' 对' + quizCorrect + '</span></div>';
-  
-  var optsHtml = '';
-  for (var j = 0; j < q.o.length; j++) {
+  var ua = S.qAnswers[q.q], ans = ua !== undefined;
+  var pct = quizQuestions.length ? Math.round(quizIndex/quizQuestions.length*100) : 0;
+  var prog = '<div class="quiz-progress-bar"><div class="fill" style="width:'+pct+'%"></div></div>';
+  var info = '<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:6px">';
+  info += '<span>'+(quizIndex+1)+'/'+quizQuestions.length+'</span><span>答'+quizAnswered+' 对'+quizCorrect+'</span></div>';
+  var opts = '';
+  for (var j=0;j<q.o.length;j++) {
     var cls = 'quiz-opt';
     if (ans) {
-      if (j === q.a) cls += ' show-correct';
-      if (j === ua && j !== q.a) cls += ' selected-wrong';
-      if (j === ua && j === q.a) cls += ' selected-correct';
-      cls += ' disabled';
+      if (j===q.a) cls+=' show-correct';
+      if (j===ua&&j!==q.a) cls+=' selected-wrong';
+      if (j===ua&&j===q.a) cls+=' selected-correct';
+      cls+=' disabled';
     }
-    var onclick = ans ? '' : 'onclick="checkQuiz(this,' + j + ',' + q.a + ')"';
-    optsHtml += '<div class="' + cls + '" ' + onclick + '>' + 'ABCD'[j] + '. ' + q.o[j] + '</div>';
+    opts += '<div class="'+cls+'" '+(ans?'':'onclick="checkAnswer('+j+','+q.a+','+quizIndex+')"')+'>'+'ABCD'[j]+'. '+q.o[j]+'</div>';
   }
-  
-  var cardHtml = '<div class="card">';
-  cardHtml += '<span class="tag tag-blue">' + q.c + '</span>';
-  cardHtml += '<div style="font-weight:600;font-size:14px;margin:8px 0">' + q.q + '</div>';
-  cardHtml += optsHtml;
-  cardHtml += '</div>';
-  
-  document.getElementById('quizStatus').innerHTML = progress + status;
-  document.getElementById('quizCard').innerHTML = cardHtml;
+  var card = '<div class="card"><span class="tag tag-blue">'+q.c+'</span>';
+  card += '<div style="font-weight:600;font-size:14px;margin:8px 0">'+q.q+'</div>'+opts+'</div>';
+  document.getElementById('quizStatus').innerHTML = prog + info;
+  document.getElementById('quizCard').innerHTML = card;
+  var nav = '<button onclick="prevQ()" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">上一题</button>';
+  nav += '<button onclick="nextQ()" style="padding:8px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">下一题</button>';
+  document.getElementById('quizNav').innerHTML = nav;
 }
 
-function checkQuiz(el, selIdx, correctIdx) {
-  var card = el.closest('.card');
-  var opts = card.querySelectorAll('.quiz-opt');
-  for (var i = 0; i < opts.length; i++) opts[i].classList.add('disabled');
-  el.classList.add(selIdx === correctIdx ? 'selected-correct' : 'selected-wrong');
-  opts[correctIdx].classList.add('show-correct');
-  
-  var q = quizQuestions[quizIndex];
+function checkAnswer(selIdx, correctIdx, qi) {
+  var q = quizQuestions[qi];
   S.qAnswers[q.q] = selIdx;
   localStorage.setItem('mq', JSON.stringify(S.qAnswers));
-  
   quizAnswered++;
   if (selIdx === correctIdx) quizCorrect++;
-  
   showQuestion();
 }
 
-function nextQuestion() {
-  if (quizIndex < quizQuestions.length) {
-    quizIndex++;
-    showQuestion();
-  }
-}
+function nextQ() { if (quizIndex < quizQuestions.length-1) { quizIndex++; showQuestion(); } }
+function prevQ() { if (quizIndex > 0) { quizIndex--; showQuestion(); } }
 
-function prevQuestion() {
-  if (quizIndex > 0) {
-    quizIndex--;
-    showQuestion();
-  }
-}
-
-function showQuizResult() {
+function showPracticeResult() {
   var pct = quizQuestions.length ? Math.round(quizCorrect/quizQuestions.length*100) : 0;
-  var grade = pct >= 80 ? '优秀!' : (pct >= 60 ? '不错!' : '继续加油!');
+  var emoji = pct>=80?'🎉':(pct>=60?'👍':'💪');
   document.getElementById('quizCard').style.display = 'none';
-  document.getElementById('quizNav').style.display = 'none';
-  document.getElementById('quizStatus').innerHTML = '';
-  document.getElementById('quizResult').style.display = 'block';
-  document.getElementById('quizResult').innerHTML = '<div class="card" style="text-align:center;padding:30px">' +
-    '<div style="font-size:40px;margin-bottom:10px">' + (pct >= 80 ? '🎉' : (pct >= 60 ? '👍' : '💪')) + '</div>' +
-    '<div style="font-size:20px;font-weight:700">' + quizCorrect + '/' + quizQuestions.length + '</div>' +
-    '<div style="font-size:15px;color:var(--text2);margin:6px 0">正确率 ' + pct + '% ' + grade + '</div>' +
-    '<button onclick="startQuiz()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:14px">再来一轮</button>' +
-    '</div>';
+  document.getElementById('quizNav').innerHTML = '';
+  document.getElementById('quizResult').innerHTML = '<div class="card" style="text-align:center;padding:30px">'+
+    '<div style="font-size:40px;margin-bottom:10px">'+emoji+'</div>'+
+    '<div style="font-size:20px;font-weight:700">'+quizCorrect+'/'+quizQuestions.length+'</div>'+
+    '<div style="font-size:15px;color:var(--text2);margin:6px 0">正确率 '+pct+'%</div>'+
+    '<button onclick="startPractice()" style="margin-top:12px;padding:10px 24px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:14px">再来一轮</button></div>';
+}
+
+// ===== CHALLENGE =====
+function showChallengeMode() {
+  var h = '<div style="margin-bottom:10px"><div style="font-weight:600;font-size:15px">闯关模式</div>';
+  h += '<div style="font-size:13px;color:var(--text2);margin-top:2px">逐章通关，每关5题，全部答对得三星</div></div>';
+  h += '<div id="challengeMap"></div><div id="challengePlay" style="display:none"></div>';
+  document.getElementById('quizPanel').innerHTML = h;
+  renderMap();
+}
+
+function renderMap() {
+  var h = '';
+  for (var i=0;i<chapters.length;i++) {
+    var stars = chStars[i]||0;
+    var s = '';
+    for (var j=0;j<3;j++) s += j<stars?'⭐':'☆';
+    var b = stars>0?'style="border-left:3px solid var(--success)"':'';
+    h += '<div class="card" '+b+' onclick="startLevel('+i+')" style="cursor:pointer">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    h += '<div><div style="font-weight:600">第'+(i+1)+'关: '+chapters[i]+'</div>';
+    h += '<div style="font-size:12px;color:var(--text2);margin-top:2px">'+s+'</div></div>';
+    h += '<div style="font-size:20px">'+(stars>0?'✅':'')+'</div></div></div>';
+  }
+  document.getElementById('challengeMap').innerHTML = h;
+}
+
+function startLevel(idx) {
+  challengeLevel = idx;
+  var ch = chapters[idx];
+  var pool = DATA.quiz.filter(function(q){return q.c===ch});
+  if (pool.length < 3) { showChallengeMode(); return; }
+  quizQuestions = pool.slice().sort(function(){return Math.random()-0.5}).slice(0,5);
+  quizIndex = 0; quizCorrect = 0;
+  document.getElementById('challengeMap').style.display = 'none';
+  document.getElementById('challengePlay').style.display = 'block';
+  showLevel();
+}
+
+function showLevel() {
+  if (quizIndex >= quizQuestions.length) { showLevelResult(); return; }
+  var q = quizQuestions[quizIndex];
+  var dots = '';
+  for (var i=0;i<quizQuestions.length;i++) dots += i<quizIndex?'🟢':(i===quizIndex?'⚪':'⚫');
+  var h = '<div style="font-size:12px;color:var(--text2);margin-bottom:4px">第'+(challengeLevel+1)+'关 '+chapters[challengeLevel]+' '+(quizIndex+1)+'/'+quizQuestions.length+'</div>';
+  h += '<div style="font-size:11px;margin-bottom:8px">'+dots+'</div>';
+  var opts = '';
+  for (var j=0;j<q.o.length;j++) {
+    opts += '<div class="quiz-opt" onclick="checkLevel(this,'+j+','+q.a+')">'+'ABCD'[j]+'. '+q.o[j]+'</div>';
+  }
+  h += '<div class="card"><div style="font-weight:600;font-size:14px;margin-bottom:8px">'+q.q+'</div>'+opts+'</div>';
+  document.getElementById('challengePlay').innerHTML = h;
+}
+
+function checkLevel(el, selIdx, correctIdx) {
+  var card = el.closest('.card');
+  var opts = card.querySelectorAll('.quiz-opt');
+  for (var i=0;i<opts.length;i++) opts[i].classList.add('disabled');
+  el.classList.add(selIdx===correctIdx?'selected-correct':'selected-wrong');
+  opts[correctIdx].classList.add('show-correct');
+  if (selIdx === correctIdx) quizCorrect++;
+  setTimeout(function(){quizIndex++;showLevel();}, 600);
+}
+
+function showLevelResult() {
+  var total = quizQuestions.length;
+  var stars = quizCorrect===total?3:(quizCorrect>=total-1?2:(quizCorrect>=total-2?1:0));
+  if (stars > (chStars[challengeLevel]||0)) {
+    chStars[challengeLevel] = stars;
+    localStorage.setItem('chStars', JSON.stringify(chStars));
+  }
+  var ss = '';
+  for (var i=0;i<3;i++) ss += i<stars?'⭐':'☆';
+  var msg = stars===3?'完美通关!':(stars>=2?'不错!':'继续加油!');
+  var h = '<div class="card" style="text-align:center;padding:30px">';
+  h += '<div style="font-size:40px;margin-bottom:6px">'+ss+'</div>';
+  h += '<div style="font-size:20px;font-weight:700;margin:8px 0">'+quizCorrect+'/'+total+'</div>';
+  h += '<div style="font-size:15px;color:var(--text2)">'+msg+'</div>';
+  h += '<div style="display:flex;gap:8px;justify-content:center;margin-top:14px">';
+  h += '<button onclick="startLevel('+challengeLevel+')" style="padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:13px">重试</button>';
+  h += '<button onclick="showChallengeMode()" style="padding:8px 20px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:13px">返回</button></div></div>';
+  document.getElementById('challengePlay').innerHTML = h;
 }
 
 // ===== LATIN =====
